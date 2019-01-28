@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "119861500389",
+    "firebase_url": "https://biometrixpoc.firebaseio.com",
+    "project_id": "biometrixpoc",
+    "storage_bucket": "biometrixpoc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119861500389:android:d0be4f01acb2c5bb",
+        "android_client_info": {
+          "package_name": "com.prishanm.biometrixpoc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "119861500389-1v6lcj05q185n0ievpenv8b4cul0qtse.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.prishanm.biometrixpoc",
+            "certificate_hash": "21d3a9d72af45f135d3530b6a10842c1e52fdbad"
+          }
+        },
+        {
+          "client_id": "119861500389-mihou0racq2o7urvk823i5goos141s2q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBh8UiKiKDaGTfzJDZ9-FlDeZh1Jwqijws"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "119861500389-mihou0racq2o7urvk823i5goos141s2q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -283,4 +283,38 @@ public class CameraUtils {
         return img;
 
     }
+
+    /* Get the file Uri object by android os version.
+     *  return a Uri object. */
+    public static Uri getImageFileUriByOsVersion(File file,Context context)
+    {
+        Uri ret = null;
+
+        // Get output image unique resource identifier. This uri is used by camera app to save taken picture temporary.
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        {
+            // /sdcard/ folder link to /storage/41B7-12F1 folder
+            // so below code return /storage/41B7-12F1
+            File externalStorageRootDir = Environment.getExternalStorageDirectory();
+
+            // contextRootDir = /data/user/0/com.dev2qa.example/files in my Huawei mate 8.
+            File contextRootDir = context.getFilesDir();
+
+            // contextCacheDir = /data/user/0/com.dev2qa.example/cache in my Huawei mate 8.
+            File contextCacheDir = context.getCacheDir();
+
+            // For android os version bigger than or equal to 7.0 use FileProvider class.
+            // Otherwise android os will throw FileUriExposedException.
+            // Because the system considers it is unsafe to use local real path uri directly.
+            Context ctx = context;
+            ret = FileProvider.getUriForFile(ctx, "com.prishanm.biometrixpoc", file);
+        }else
+        {
+            // For android os version less than 7.0 there are no safety issue,
+            // So we can get the output image uri by file real local path directly.
+            ret = Uri.fromFile(file);
+        }
+
+        return ret;
+    }
 }

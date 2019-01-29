@@ -1,11 +1,17 @@
 package com.prishanm.biometrixpoc;
 
+import android.content.ContentResolver;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by Prishan Maduka on 28,January,2019
@@ -81,5 +87,61 @@ public class FileUtils {
             e.printStackTrace();
         }
         return f.getAbsolutePath();
+    }
+
+    public static Uri getOutputImageUri (Context context){
+
+        Uri outputImgUri = null;
+        try {
+
+            // Create a random image file name.
+            String imageFileName = "IMG_" + System.currentTimeMillis() + ".jpg";
+
+            // Construct a output file to save camera taken picture temporary.
+            File outputImageFile = new File(context.getExternalCacheDir(), imageFileName);
+
+            // If cached temporary file exist then delete it.
+            if (outputImageFile.exists()) {
+                outputImageFile.delete();
+            }
+
+            // Create a new temporary file.
+            outputImageFile.createNewFile();
+
+            // Get the output image file Uri wrapper object.
+            outputImgUri = CameraUtils.getImageFileUriByOsVersion(outputImageFile,context);
+
+        }catch(IOException ex)
+        {
+            Log.e("ERROR", ex.getMessage(), ex);
+        }
+
+        return outputImgUri;
+    }
+
+    public static boolean copyFileFromUri(Uri sourceFileUri, Uri destinationFileUri)
+    {
+        String sourcePath = sourceFileUri.getPath();
+        File sourceFile = new File(sourcePath);
+
+        String destinationPath = destinationFileUri.getPath();
+        File destinationFile = new File(destinationPath);
+
+        try
+        {
+            if(destinationFile.exists()){
+                destinationFile.delete();
+            }
+            org.apache.commons.io.FileUtils.moveFile(sourceFile,destinationFile);
+
+            return true;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+
+            return false;
+        }
+
     }
 }

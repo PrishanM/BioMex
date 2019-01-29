@@ -39,14 +39,21 @@
             android:id="@+id/btnCapture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Capture Image"
+            android:text="Capture"
+            android:layout_margin="4dp"/>
+
+        <Button
+            android:id="@+id/btnEnhance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enhance"
             android:layout_margin="4dp"/>
 
         <Button
             android:id="@+id/btnCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Validate Image"
+            android:text="Validate"
             android:layout_margin="4dp"/>
     </LinearLayout>
 

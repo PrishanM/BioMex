@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int requestPermissionID = 101;
 
+    public static final int ACTION_REQUEST_EDITIMAGE = 9;
+
     // Bitmap sampling size
     public static final int BITMAP_SAMPLE_SIZE = 2;
 
@@ -91,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         } else if (v.getId() == R.id.btnCheck) {
 
+            /*File outputFile = FileUtils.genEditFile();
+            EditImageActivity.start(this,fileUri.getPath(),outputFile.getAbsolutePath(),ACTION_REQUEST_EDITIMAGE,false);
+*/
             FirebaseVisionImage image;
             try {
                 image = FirebaseVisionImage.fromFilePath(_Context, fileUri);
@@ -181,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
             }
+        } else if( requestCode == ACTION_REQUEST_EDITIMAGE){
+
         }
     }
 
@@ -208,4 +215,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         // [END mlkit_process_text_block]
     }
+
+
 }

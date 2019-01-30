@@ -1,0 +1,48 @@
+package com.prishanm.biometrixpoc.common;
+
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.util.Log;
+
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.RecognizedLanguage;
+
+import java.util.List;
+
+/**
+ * Created by Prishan Maduka on 29,January,2019
+ */
+public class ApplicationCommons {
+
+    public static void simulateDelay() {
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void processTextBlock(FirebaseVisionText result) {
+        // [START mlkit_process_text_block]
+        String resultText = result.getText();
+        int x = 0;
+        for (FirebaseVisionText.TextBlock block: result.getTextBlocks()) {
+
+
+            String blockText = block.getText();
+            Float blockConfidence = block.getConfidence();
+            List<RecognizedLanguage> blockLanguages = block.getRecognizedLanguages();
+            Point[] blockCornerPoints = block.getCornerPoints();
+            Rect blockFrame = block.getBoundingBox();
+
+
+            for (FirebaseVisionText.Line line: block.getLines()) {
+
+                String lineText = line.getText();
+                Log.d("++++"+x,lineText);
+                x++;
+
+            }
+        }
+        // [END mlkit_process_text_block]
+    }
+}

@@ -1,4 +1,4 @@
-package com.prishanm.biometrixpoc;
+package com.prishanm.biometrixpoc.view;
 
 import android.Manifest;
 import android.app.Activity;
@@ -6,16 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,51 +22,58 @@ import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
-import com.google.firebase.ml.vision.text.RecognizedLanguage;
+import com.prishanm.biometrixpoc.R;
+import com.prishanm.biometrixpoc.common.ApplicationCommons;
+import com.prishanm.biometrixpoc.common.CameraUtils;
+import com.prishanm.biometrixpoc.common.FileUtils;
+import com.prishanm.biometrixpoc.databinding.ActivityCameraBinding;
+import com.prishanm.biometrixpoc.di.Injectable;
+import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import dagger.android.AndroidInjection;
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic;
-import ly.img.android.pesdk.assets.font.basic.FontPackBasic;
-import ly.img.android.pesdk.assets.frame.basic.FramePackBasic;
-import ly.img.android.pesdk.assets.overlay.basic.OverlayPackBasic;
-import ly.img.android.pesdk.assets.sticker.emoticons.StickerPackEmoticons;
-import ly.img.android.pesdk.assets.sticker.shapes.StickerPackShapes;
 import ly.img.android.pesdk.backend.model.constant.Directory;
-import ly.img.android.pesdk.backend.model.state.CameraSettings;
 import ly.img.android.pesdk.backend.model.state.EditorLoadSettings;
 import ly.img.android.pesdk.backend.model.state.EditorSaveSettings;
 import ly.img.android.pesdk.backend.model.state.manager.SettingsList;
-import ly.img.android.pesdk.ui.activity.CameraPreviewBuilder;
 import ly.img.android.pesdk.ui.activity.ImgLyIntent;
 import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder;
 import ly.img.android.pesdk.ui.model.state.UiConfigFilter;
-import ly.img.android.pesdk.ui.model.state.UiConfigFrame;
-import ly.img.android.pesdk.ui.model.state.UiConfigOverlay;
-import ly.img.android.pesdk.ui.model.state.UiConfigSticker;
-import ly.img.android.pesdk.ui.model.state.UiConfigText;
-import ly.img.android.serializer._3._0._0.PESDKFileWriter;
-
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 /**
  * Created by Prishan Maduka on 28,January,2019
  */
-public class CameraActivity extends AppCompatActivity implements View.OnClickListener{
+public class CameraActivity extends AppCompatActivity implements Injectable {
 
-    private Button btnCapture, btnCheck, btnEnhance;
-    private ImageView imgImage;
-    private TextView txtData;
+    @BindView(R.id.btnCapture) Button btnCapture;
+
+    @BindView(R.id.btnCheck) Button btnCheck;
+
+    @BindView(R.id.btnEnhance) Button btnEnhance;
+
+    @BindView(R.id.imgCapture) ImageView imgImage;
+
+    @BindView(R.id.txtCapture) TextView txtData;
+
     private Context _Context;
-
     private Uri resultURI;
-    private String imageStoragePath;
-    public Bitmap bitmap;
 
     private static final int requestPermissionID = 101;
 
@@ -82,10 +82,35 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     public static int PESDK_RESULT = 1;
 
-    @Override
-    public void onClick(View v) {
+    private ActivityCameraBinding activityCameraBinding;
 
-        if (v.getId() == R.id.btnCapture) {
+    @Nullable
+    @Inject
+    ViewModelProvider.Factory factory;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        AndroidInjection.inject(this);
+
+        activityCameraBinding = DataBindingUtil.setContentView(this, R.layout.activity_camera);
+
+        ButterKnife.bind(this);
+
+        final CameraViewModel cameraViewModel;
+
+        cameraViewModel = ViewModelProviders.of(this, factory)
+                .get(CameraViewModel.class);
+
+
+        activityCameraBinding.setCameraViewModel(cameraViewModel);
+        _Context = getApplicationContext();
+    }
+
+    @OnClick({R.id.btnCapture,R.id.btnCheck,R.id.btnEnhance})
+    public void setButtonOnClickEvent(View view){
+        if (view.getId() == R.id.btnCapture) {
 
             if (CameraUtils.checkPermissions(_Context)) {
                 captureImage();
@@ -98,7 +123,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 return;
             }
 
-        } if (v.getId() == R.id.btnCheck) {
+        } if (view.getId() == R.id.btnCheck) {
 
             FirebaseVisionImage image;
             try {
@@ -113,7 +138,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                                 .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
                                     @Override
                                     public void onSuccess(FirebaseVisionText firebaseVisionText) {
-                                        processTextBlock(firebaseVisionText);
+                                        ApplicationCommons.processTextBlock(firebaseVisionText);
                                     }
                                 })
                                 .addOnFailureListener(
@@ -130,27 +155,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 e.printStackTrace();
             }
 
-        } else if(v.getId() == R.id.btnEnhance){
+        } else if(view.getId() == R.id.btnEnhance){
             openEditor(resultURI);
         }
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        btnCapture = findViewById(R.id.btnCapture);
-        btnCheck = findViewById(R.id.btnCheck);
-        btnEnhance = findViewById(R.id.btnEnhance);
-        imgImage = findViewById(R.id.imgCapture);
-        txtData = findViewById(R.id.txtCapture);
-
-        btnCapture.setOnClickListener(this);
-        btnCheck.setOnClickListener(this);
-        btnEnhance.setOnClickListener(this);
-
-        _Context = getApplicationContext();
     }
 
     @Override
@@ -203,27 +210,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 FilterPackBasic.getFilterPack()
         );
 
-        /*settingsList.getSettingsModel(UiConfigText.class).setFontList(
-                FontPackBasic.getFontPack()
-        );
-
-        settingsList.getSettingsModel(UiConfigFrame.class).setFrameList(
-                FramePackBasic.getFramePack()
-        );
-
-        settingsList.getSettingsModel(UiConfigOverlay.class).setOverlayList(
-                OverlayPackBasic.getOverlayPack()
-        );
-
-        settingsList.getSettingsModel(UiConfigSticker.class).setStickerLists(
-                StickerPackEmoticons.getStickerCategory(),
-                StickerPackShapes.getStickerCategory()
-        );*/
-
-        // Set custom camera image export settings
-        /*settingsList.getSettingsModel(CameraSettings.class)
-                .setExportDir(Directory.DCIM, FileUtils.FOLDER_NAME)
-                .setExportPrefix("IMG_"+timeStamp);*/
 
         // Set custom editor image export settings
         settingsList.getSettingsModel(EditorSaveSettings.class)
@@ -333,28 +319,4 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private void processTextBlock(FirebaseVisionText result) {
-        // [START mlkit_process_text_block]
-        String resultText = result.getText();
-        int x = 0;
-        for (FirebaseVisionText.TextBlock block: result.getTextBlocks()) {
-
-
-            String blockText = block.getText();
-            Float blockConfidence = block.getConfidence();
-            List<RecognizedLanguage> blockLanguages = block.getRecognizedLanguages();
-            Point[] blockCornerPoints = block.getCornerPoints();
-            Rect blockFrame = block.getBoundingBox();
-
-
-            for (FirebaseVisionText.Line line: block.getLines()) {
-
-                String lineText = line.getText();
-                Log.d("++++"+x,lineText);
-                x++;
-
-            }
-        }
-        // [END mlkit_process_text_block]
-    }
 }

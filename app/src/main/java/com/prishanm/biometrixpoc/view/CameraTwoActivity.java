@@ -1,4 +1,4 @@
-package com.prishanm.biometrixpoc;
+package com.prishanm.biometrixpoc.view;
 
 import android.Manifest;
 import android.app.Activity;
@@ -6,15 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,60 +29,44 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 import com.google.firebase.ml.vision.text.RecognizedLanguage;
+import com.prishanm.biometrixpoc.common.CameraUtils;
+import com.prishanm.biometrixpoc.common.FileUtils;
+import com.prishanm.biometrixpoc.R;
+import com.yalantis.ucrop.UCrop;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
+/**
+ * Created by Prishan Maduka on 28,January,2019
+ */
+public class CameraTwoActivity extends AppCompatActivity implements View.OnClickListener{
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-
-    //Capture Image Request Code
-    private static final int CAPTURE_IMAGE = 1000;
-
-    private static final int requestPermissionID = 101;
-
-    public static final int ACTION_REQUEST_EDITIMAGE = 9;
-
-    // Bitmap sampling size
-    public static final int BITMAP_SAMPLE_SIZE = 2;
-
-    private Button btnCapture, btnCheck;
+    private Button btnCapture, btnCheck, btnEnhance;
     private ImageView imgImage;
     private TextView txtData;
     private Context _Context;
 
-    //Image SourcePath
-    private static String imageStoragePath;
-    Uri fileUri;
+    private Uri resultURI;
+    private String imageStoragePath;
     public Bitmap bitmap;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    private static final int requestPermissionID = 101;
 
-        btnCapture = findViewById(R.id.btnCapture);
-        btnCheck = findViewById(R.id.btnCheck);
-        imgImage = findViewById(R.id.imgCapture);
-        txtData = findViewById(R.id.txtCapture);
+    //Capture Image Request Code
+    private static final int CAPTURE_IMAGE = 1000;
 
-        btnCapture.setOnClickListener(this);
-        btnCheck.setOnClickListener(this);
-
-        _Context = getApplicationContext();
-    }
-
+    public static int PESDK_RESULT = 1;
 
     @Override
     public void onClick(View v) {
+
         if (v.getId() == R.id.btnCapture) {
 
             if (CameraUtils.checkPermissions(_Context)) {
                 captureImage();
             } else {
-                ActivityCompat.requestPermissions(MainActivity.this,
+                ActivityCompat.requestPermissions(CameraTwoActivity.this,
                         new String[]{Manifest.permission.CAMERA,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         requestPermissionID);
@@ -90,15 +74,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return;
             }
 
+        } if (v.getId() == R.id.btnCheck) {
 
-        } else if (v.getId() == R.id.btnCheck) {
-
-            /*File outputFile = FileUtils.genEditFile();
-            EditImageActivity.start(this,fileUri.getPath(),outputFile.getAbsolutePath(),ACTION_REQUEST_EDITIMAGE,false);
-*/
             FirebaseVisionImage image;
             try {
-                image = FirebaseVisionImage.fromFilePath(_Context, fileUri);
+                image = FirebaseVisionImage.fromFilePath(_Context, resultURI);
 
                 FirebaseVisionTextRecognizer detector = FirebaseVision.getInstance()
                         .getOnDeviceTextRecognizer();
@@ -126,7 +106,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
 
+        } else if(v.getId() == R.id.btnEnhance){
+            openEditor(resultURI);
         }
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        btnCapture = findViewById(R.id.btnCapture);
+        btnCheck = findViewById(R.id.btnCheck);
+        btnEnhance = findViewById(R.id.btnEnhance);
+        imgImage = findViewById(R.id.imgCapture);
+        txtData = findViewById(R.id.txtCapture);
+
+        btnCapture.setOnClickListener(this);
+        btnCheck.setOnClickListener(this);
+        btnEnhance.setOnClickListener(this);
+
+        _Context = getApplicationContext();
     }
 
     @Override
@@ -148,23 +148,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void captureImage() {
 
-        //Capturing Images Using Camera Intent
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = CameraUtils.getOutputMediaFile(MEDIA_TYPE_IMAGE);
 
-        if (file != null) {
-            imageStoragePath = file.getAbsolutePath();
-        }
-
-        fileUri = CameraUtils.getOutputMediaFileUri(_Context, file);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+        resultURI = FileUtils.getOutputImageUri(_Context);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
 
         startActivityForResult(intent, CAPTURE_IMAGE);
 
+
+    }
+
+
+    private void openEditor(Uri inputImage) {
+        UCrop.of(inputImage, inputImage)
+                .withAspectRatio(5, 4)
+                .withMaxResultSize(1024, 1024)
+                .start(CameraTwoActivity.this);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+
         if (requestCode == CAPTURE_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
 
@@ -172,8 +177,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     //bitmap = CameraUtils.optimizeBitmap(BITMAP_SAMPLE_SIZE, imageStoragePath);
                     try {
-                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,fileUri);
-                        imgImage.setImageBitmap(CameraUtils.rotateImage(bitmap,90));
+                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
+                        imgImage.setImageBitmap(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -186,8 +191,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
             }
-        } else if( requestCode == ACTION_REQUEST_EDITIMAGE){
-
+        } else if(resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP){
+            final Uri resultUri = UCrop.getOutput(data);
+            try {
+                bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultUri);
+                imgImage.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -213,8 +224,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         }
-        // [END mlkit_process_text_block]
     }
-
-
 }

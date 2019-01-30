@@ -54,6 +54,12 @@ pesdkConfig {
     }
 }
 
+project.ext {
+    // …
+    dagger_version = "2.21"
+    butterknife_version = "10.0.0"
+}
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -62,7 +68,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -70,21 +76,42 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    dataBinding{
+        enabled=true
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     //noinspection GradleCompatible
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
     implementation 'com.google.firebase:firebase-ml-vision:18.0.2'
     implementation 'com.github.yalantis:ucrop:2.2.2-native'
     implementation group: 'commons-io', name: 'commons-io', version: '2.0.1'
+    //Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    //Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0-beta01'
+    //Dagger
+    implementation "com.google.dagger:dagger:$project.dagger_version"
+    annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
+    implementation "com.google.dagger:dagger-android:$project.dagger_version"
+    implementation "com.google.dagger:dagger-android-support:$project.dagger_version"
+    annotationProcessor "com.google.dagger:dagger-android-processor:$dagger_version"
+    //Butterknife
+    implementation "com.jakewharton:butterknife:$project.butterknife_version"
+    annotationProcessor "com.jakewharton:butterknife-compiler:$butterknife_version"
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
 }
 
 apply plugin: 'com.google.gms.google-services'

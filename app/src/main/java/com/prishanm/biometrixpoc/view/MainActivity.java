@@ -1,4 +1,4 @@
-package com.prishanm.biometrixpoc;
+package com.prishanm.biometrixpoc.view;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,10 +11,9 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,56 +28,62 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 import com.google.firebase.ml.vision.text.RecognizedLanguage;
-import com.yalantis.ucrop.UCrop;
+import com.prishanm.biometrixpoc.R;
+import com.prishanm.biometrixpoc.common.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-
-import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic;
-import ly.img.android.pesdk.backend.model.constant.Directory;
-import ly.img.android.pesdk.backend.model.state.CameraSettings;
-import ly.img.android.pesdk.backend.model.state.EditorLoadSettings;
-import ly.img.android.pesdk.backend.model.state.EditorSaveSettings;
-import ly.img.android.pesdk.backend.model.state.manager.SettingsList;
-import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder;
-import ly.img.android.pesdk.ui.model.state.UiConfigFilter;
 
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
-/**
- * Created by Prishan Maduka on 28,January,2019
- */
-public class CameraTwoActivity extends AppCompatActivity implements View.OnClickListener{
-
-    private Button btnCapture, btnCheck, btnEnhance;
-    private ImageView imgImage;
-    private TextView txtData;
-    private Context _Context;
-
-    private Uri resultURI;
-    private String imageStoragePath;
-    public Bitmap bitmap;
-
-    private static final int requestPermissionID = 101;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     //Capture Image Request Code
     private static final int CAPTURE_IMAGE = 1000;
 
-    public static int PESDK_RESULT = 1;
+    private static final int requestPermissionID = 101;
+
+    public static final int ACTION_REQUEST_EDITIMAGE = 9;
+
+    // Bitmap sampling size
+    public static final int BITMAP_SAMPLE_SIZE = 2;
+
+    private Button btnCapture, btnCheck;
+    private ImageView imgImage;
+    private TextView txtData;
+    private Context _Context;
+
+    //Image SourcePath
+    private static String imageStoragePath;
+    Uri fileUri;
+    public Bitmap bitmap;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        btnCapture = findViewById(R.id.btnCapture);
+        btnCheck = findViewById(R.id.btnCheck);
+        imgImage = findViewById(R.id.imgCapture);
+        txtData = findViewById(R.id.txtCapture);
+
+        btnCapture.setOnClickListener(this);
+        btnCheck.setOnClickListener(this);
+
+        _Context = getApplicationContext();
+    }
+
 
     @Override
     public void onClick(View v) {
-
         if (v.getId() == R.id.btnCapture) {
 
             if (CameraUtils.checkPermissions(_Context)) {
                 captureImage();
             } else {
-                ActivityCompat.requestPermissions(CameraTwoActivity.this,
+                ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.CAMERA,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         requestPermissionID);
@@ -86,11 +91,15 @@ public class CameraTwoActivity extends AppCompatActivity implements View.OnClick
                 return;
             }
 
-        } if (v.getId() == R.id.btnCheck) {
 
+        } else if (v.getId() == R.id.btnCheck) {
+
+            /*File outputFile = FileUtils.genEditFile();
+            EditImageActivity.start(this,fileUri.getPath(),outputFile.getAbsolutePath(),ACTION_REQUEST_EDITIMAGE,false);
+*/
             FirebaseVisionImage image;
             try {
-                image = FirebaseVisionImage.fromFilePath(_Context, resultURI);
+                image = FirebaseVisionImage.fromFilePath(_Context, fileUri);
 
                 FirebaseVisionTextRecognizer detector = FirebaseVision.getInstance()
                         .getOnDeviceTextRecognizer();
@@ -118,27 +127,7 @@ public class CameraTwoActivity extends AppCompatActivity implements View.OnClick
                 e.printStackTrace();
             }
 
-        } else if(v.getId() == R.id.btnEnhance){
-            openEditor(resultURI);
         }
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        btnCapture = findViewById(R.id.btnCapture);
-        btnCheck = findViewById(R.id.btnCheck);
-        btnEnhance = findViewById(R.id.btnEnhance);
-        imgImage = findViewById(R.id.imgCapture);
-        txtData = findViewById(R.id.txtCapture);
-
-        btnCapture.setOnClickListener(this);
-        btnCheck.setOnClickListener(this);
-        btnEnhance.setOnClickListener(this);
-
-        _Context = getApplicationContext();
     }
 
     @Override
@@ -160,28 +149,23 @@ public class CameraTwoActivity extends AppCompatActivity implements View.OnClick
 
     private void captureImage() {
 
+        //Capturing Images Using Camera Intent
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File file = CameraUtils.getOutputMediaFile(MEDIA_TYPE_IMAGE);
 
-        resultURI = FileUtils.getOutputImageUri(_Context);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
+        if (file != null) {
+            imageStoragePath = file.getAbsolutePath();
+        }
+
+        fileUri = CameraUtils.getOutputMediaFileUri(_Context, file);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 
         startActivityForResult(intent, CAPTURE_IMAGE);
 
-
-    }
-
-
-    private void openEditor(Uri inputImage) {
-        UCrop.of(inputImage, inputImage)
-                .withAspectRatio(5, 4)
-                .withMaxResultSize(1024, 1024)
-                .start(CameraTwoActivity.this);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-
-
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
 
@@ -189,8 +173,8 @@ public class CameraTwoActivity extends AppCompatActivity implements View.OnClick
 
                     //bitmap = CameraUtils.optimizeBitmap(BITMAP_SAMPLE_SIZE, imageStoragePath);
                     try {
-                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
-                        imgImage.setImageBitmap(bitmap);
+                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,fileUri);
+                        imgImage.setImageBitmap(CameraUtils.rotateImage(bitmap,90));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -203,14 +187,8 @@ public class CameraTwoActivity extends AppCompatActivity implements View.OnClick
                 }
 
             }
-        } else if(resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP){
-            final Uri resultUri = UCrop.getOutput(data);
-            try {
-                bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultUri);
-                imgImage.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } else if( requestCode == ACTION_REQUEST_EDITIMAGE){
+
         }
     }
 
@@ -236,5 +214,8 @@ public class CameraTwoActivity extends AppCompatActivity implements View.OnClick
 
             }
         }
+        // [END mlkit_process_text_block]
     }
+
+
 }

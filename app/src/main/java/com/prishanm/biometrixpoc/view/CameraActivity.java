@@ -2,6 +2,7 @@ package com.prishanm.biometrixpoc.view;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,24 +14,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.ml.vision.FirebaseVision;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
-import com.google.firebase.ml.vision.text.FirebaseVisionText;
-import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+import com.google.android.material.textfield.TextInputEditText;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.prishanm.biometrixpoc.R;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
 import com.prishanm.biometrixpoc.common.CameraUtils;
 import com.prishanm.biometrixpoc.common.FileUtils;
 import com.prishanm.biometrixpoc.databinding.ActivityCameraBinding;
 import com.prishanm.biometrixpoc.di.Injectable;
+import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
+import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -39,6 +37,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.databinding.DataBindingUtil;
@@ -74,6 +73,8 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
     private Context _Context;
     private Uri resultURI;
+    private ProgressDialog progressDialog;
+    private boolean isDataValid = false;
 
     private static final int requestPermissionID = 101;
 
@@ -83,6 +84,8 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
     public static int PESDK_RESULT = 1;
 
     private ActivityCameraBinding activityCameraBinding;
+    private CameraViewModel cameraViewModel;
+    private CustomerDetailsModel detailsModel;
 
     @Nullable
     @Inject
@@ -98,14 +101,12 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         ButterKnife.bind(this);
 
-        final CameraViewModel cameraViewModel;
-
         cameraViewModel = ViewModelProviders.of(this, factory)
                 .get(CameraViewModel.class);
 
 
         activityCameraBinding.setCameraViewModel(cameraViewModel);
-        _Context = getApplicationContext();
+        _Context = this;
     }
 
     @OnClick({R.id.btnCapture,R.id.btnCheck,R.id.btnEnhance})
@@ -123,41 +124,161 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 return;
             }
 
-        } if (view.getId() == R.id.btnCheck) {
-
-            FirebaseVisionImage image;
-            try {
-                image = FirebaseVisionImage.fromFilePath(_Context, resultURI);
-
-                FirebaseVisionTextRecognizer detector = FirebaseVision.getInstance()
-                        .getOnDeviceTextRecognizer();
+        } else if (view.getId() == R.id.btnCheck) {
 
 
-                Task<FirebaseVisionText> result =
-                        detector.processImage(image)
-                                .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
-                                    @Override
-                                    public void onSuccess(FirebaseVisionText firebaseVisionText) {
-                                        ApplicationCommons.processTextBlock(firebaseVisionText);
-                                    }
-                                })
-                                .addOnFailureListener(
-                                        new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                // Task failed with an exception
-                                                // ...
-                                            }
-                                        });
+            progressDialog = ApplicationCommons.showProgressDialog(_Context,"Validating...", ProgressDialog.STYLE_SPINNER);
+
+            progressDialog.show();
+
+            String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
+            //Call ViewModel Repository Method to check the ID validity
+            cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
 
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            //Observe ViewModel changes
+            observeViewModel(cameraViewModel);
+
+
+
 
         } else if(view.getId() == R.id.btnEnhance){
             openEditor(resultURI);
         }
+    }
+
+    private void observeViewModel(CameraViewModel cameraViewModel) {
+
+        cameraViewModel.getIdDetectionResponseObservable().observe(this, idDetectionResponse -> {
+
+            if(progressDialog!=null)
+                progressDialog.dismiss();
+            if (idDetectionResponse != null) {
+
+                showResponseDetails(idDetectionResponse);
+            }
+        });
+    }
+
+    private void showResponseDetails(IdDetectionResponse idDetectionResponse){
+
+        detailsModel = new CustomerDetailsModel();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Customer Information");
+
+        if(idDetectionResponse.getResultcode().equalsIgnoreCase("00") ){
+
+            View customLayout = getLayoutInflater().inflate(R.layout.layout_cutomer_info, null);
+            builder.setView(customLayout);
+
+            TextView txtIdType,txtIdNumber,txtName,txtDLNumber;
+
+            txtIdType = customLayout.findViewById(R.id.txtIdType);
+            txtIdNumber = customLayout.findViewById(R.id.txtIdNumber);
+            txtName = customLayout.findViewById(R.id.txtName);
+            txtDLNumber = customLayout.findViewById(R.id.txtDLNumber);
+            LinearLayout layoutDL = customLayout.findViewById(R.id.layoutDL);
+            LinearLayout layoutNameText = customLayout.findViewById(R.id.layoutNameText);
+            LinearLayout layoutName = customLayout.findViewById(R.id.layoutName);
+            TextInputEditText inputName = customLayout.findViewById(R.id.inputName);
+
+            txtIdType.setText(idDetectionResponse.getIdType());
+            txtIdNumber.setText(idDetectionResponse.getIdNumber());
+            txtName.setText(idDetectionResponse.getName());
+
+            if( idDetectionResponse.getOtherIdNumber() != null && !idDetectionResponse.getOtherIdNumber().isEmpty()){
+                txtDLNumber.setText(idDetectionResponse.getOtherIdNumber());
+                layoutDL.setVisibility(View.VISIBLE);
+            }
+
+            if( idDetectionResponse.getName() != null && !idDetectionResponse.getName().isEmpty()){
+                layoutNameText.setVisibility(View.VISIBLE);
+                layoutName.setVisibility(View.GONE);
+            } else {
+                layoutNameText.setVisibility(View.GONE);
+                layoutName.setVisibility(View.VISIBLE);
+            }
+
+            /*Gson gson = new Gson();
+            String studentDataObjectAsAString = gson.toJson(idDetectionResponse);*/
+
+
+
+            builder.setNegativeButton("Wrong", (dialog, which) -> {
+                isDataValid = false;
+                //alertDialog.dismiss();
+
+            });
+
+            builder.setPositiveButton("Correct", (dialog, which) -> {
+                isDataValid = true;
+                detailsModel.setSessionId(idDetectionResponse.getSessionId());
+                detailsModel.setIdentityType(idDetectionResponse.getIdType());
+                detailsModel.setIdNumber(idDetectionResponse.getIdNumber());
+
+                if( idDetectionResponse.getName() != null && !idDetectionResponse.getName().isEmpty()){
+                    detailsModel.setName(idDetectionResponse.getName());
+                }else {
+                    detailsModel.setName(inputName.getText().toString());
+                }
+
+                if( idDetectionResponse.getOtherIdNumber() != null && !idDetectionResponse.getOtherIdNumber().isEmpty()){
+                    detailsModel.setOtherIdNumber(idDetectionResponse.getOtherIdNumber());
+                }
+                //alertDialog.dismiss();
+            });
+
+
+        } else if(idDetectionResponse.getResultcode().equalsIgnoreCase("12") ){
+
+            detailsModel.setSessionId(idDetectionResponse.getSessionId());
+
+            builder.setMessage(idDetectionResponse.getResult()+"\nPlease add data manually.");
+
+            builder.setPositiveButton("OK",(dialog, which) -> {
+
+                dialog.dismiss();
+
+                AlertDialog.Builder detailsDialogBuider = new AlertDialog.Builder(_Context);
+                detailsDialogBuider.setTitle("Add Customer Information");
+
+                View customDataLayout = getLayoutInflater().inflate(R.layout.layout_cutomer_info_add, null);
+                detailsDialogBuider.setView(customDataLayout);
+
+                final String[] selectedIdType = {"DRIVING LICENCE"};
+
+                MaterialSpinner spinnerIdType = customDataLayout.findViewById(R.id.spinnerIdType);
+                spinnerIdType.setItems("DRIVING LICENCE", "NATIONAL IDENTITY CARD OLD", "NATIONAL IDENTITY CARD NEW", "PASSPORT");
+                spinnerIdType.setOnItemSelectedListener((MaterialSpinner.OnItemSelectedListener<String>) (view, position, id, item) -> selectedIdType[0] = item);
+
+                TextInputEditText inputNic = customDataLayout.findViewById(R.id.inputIdNumber);
+                TextInputEditText inputName = customDataLayout.findViewById(R.id.inputName);
+
+                detailsDialogBuider.setPositiveButton("DONE",(dialog1, which1) -> {
+
+                    detailsModel.setIdentityType(selectedIdType[0]);
+                    detailsModel.setIdNumber(inputNic.getText().toString());
+                    detailsModel.setName(inputName.getText().toString());
+
+                });
+
+                AlertDialog detailAlertDialog = detailsDialogBuider.create();
+                detailAlertDialog.show();
+
+
+            });
+        }
+
+        AlertDialog alertDialog = builder.create();
+
+        alertDialog.show();
+
+
+
+
+
     }
 
     @Override

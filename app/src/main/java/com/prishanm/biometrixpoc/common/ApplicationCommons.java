@@ -1,5 +1,7 @@
 package com.prishanm.biometrixpoc.common;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
@@ -44,5 +46,13 @@ public class ApplicationCommons {
             }
         }
         // [END mlkit_process_text_block]
+    }
+
+    public static ProgressDialog showProgressDialog(Context context, String message, int style){
+        ProgressDialog progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage(message);
+        progressDialog.setProgressStyle(style);
+
+        return progressDialog;
     }
 }

@@ -13,8 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import android.util.Base64;
 import android.util.Log;
 
@@ -27,6 +25,9 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 /**
  * @author Prishan_inova
@@ -158,7 +159,7 @@ public class CameraUtils {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        bm.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+        bm.compress(Bitmap.CompressFormat.JPEG, 50, baos);
 
         byte[] byteArrayImage = baos.toByteArray();
 
@@ -170,7 +171,7 @@ public class CameraUtils {
 
             baos = new ByteArrayOutputStream();
 
-            bm.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+            bm.compress(Bitmap.CompressFormat.JPEG, 30, baos);
 
             byteArrayImage = baos.toByteArray();
 

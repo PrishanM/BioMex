@@ -1,9 +1,5 @@
 package com.prishanm.biometrixpoc.service.repository;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import android.util.Log;
-
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
 import com.prishanm.biometrixpoc.service.model.IdDetectionRequest;
@@ -11,6 +7,8 @@ import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 
 import javax.inject.Inject;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -60,7 +58,7 @@ public class BiometricRepository {
 
             @Override
             public void onFailure(Call<IdDetectionResponse> call, Throwable t) {
-                Log.e("BIOMETRIC ERROR", t.getLocalizedMessage());
+                //Log.e("BIOMETRIC ERROR", t.getLocalizedMessage());
                 data.setValue(null);
             }
         });

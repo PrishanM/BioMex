@@ -2,6 +2,7 @@ package com.prishanm.biometrixpoc.common;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
@@ -10,6 +11,8 @@ import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.RecognizedLanguage;
 
 import java.util.List;
+
+import androidx.appcompat.app.AlertDialog;
 
 /**
  * Created by Prishan Maduka on 29,January,2019
@@ -54,5 +57,32 @@ public class ApplicationCommons {
         progressDialog.setProgressStyle(style);
 
         return progressDialog;
+    }
+
+    public static AlertDialog showAlertDialog(Context context, String title, String message, String positiveButtonText, String negativeButtonText){
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setTitle("Customer Information");
+
+        dialogBuilder.setMessage(message);
+
+        dialogBuilder.setPositiveButton(positiveButtonText, (dialog, which) -> {
+
+        });
+
+        if(negativeButtonText!= null && !negativeButtonText.isEmpty()){
+
+            dialogBuilder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+        }
+
+        AlertDialog alertDialog = dialogBuilder.create();
+
+        return alertDialog;
+
     }
 }

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <!--<variable name="isLoading" type="boolean" />-->
         <variable name="cameraViewModel" type="com.prishanm.biometrixpoc.viewModel.CameraViewModel"/>
+        <variable name="isImageCaptured" type="boolean" />
     </data>
 
     <LinearLayout
@@ -12,57 +13,107 @@
         android:layout_height="match_parent"
         android:weightSum="1">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.1"
+            android:gravity="center"
+            android:text="STEP 01"
+            android:textSize="24sp"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.8"
-            android:orientation="vertical">
+            android:layout_weight="0.75"
+            android:orientation="vertical"
+            android:gravity="center">
 
-            <TextView
-                android:id="@+id/txtCapture"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
+                android:orientation="vertical"
                 android:gravity="center"
-                android:text="Capture NIC/DL/PP Image"
-                android:visibility="gone"/>
+                android:layout_margin="12dp"
+                app:visibleGone="@{!isImageCaptured}">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="22sp"
+                    android:layout_margin="12dp"
+                    android:text="Please folow the following steps:"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:layout_margin="12dp"
+                    android:text="* Capture the front image of NIC/Driving License or Passport"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:layout_margin="12dp"
+                    android:text="* Validate the image captured"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:layout_margin="12dp"
+                    android:text="* If it is a new NIC scan with the camera"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:layout_margin="12dp"
+                    android:text="* Proceed to step 02"/>
+
+
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/imgCapture"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="4dp"/>
+                android:layout_margin="10dp"
+                android:padding="10dp"
+                app:visibleGone="@{isImageCaptured}"/>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.2"
+            android:layout_weight="0.15"
             android:gravity="center"
             android:orientation="horizontal">
 
-            <Button
+            <ImageButton
                 android:id="@+id/btnCapture"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Capture"
-                android:layout_margin="4dp"/>
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/ic_camera"
+                android:text="Capture" />
 
-            <Button
-                android:id="@+id/btnEnhance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Enhance"
-                android:visibility="gone"
-                android:layout_margin="4dp"/>
-
-            <Button
+            <ImageButton
                 android:id="@+id/btnCheck"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Validate"
-                android:layout_margin="4dp"/>
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/ic_checked"
+                android:text="Capture"/>
+
+            <ImageButton
+                android:id="@+id/btnNext"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/ic_next"
+                android:text="Capture"/>
         </LinearLayout>
 
     </LinearLayout>

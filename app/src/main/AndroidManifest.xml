@@ -32,12 +32,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".view.CameraTwoActivity">
-            <!--<intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".view.NewIdActivity">
+        </activity>
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+        <activity android:name=".view.CameraStepTwoActivity">
         </activity>
 
         <activity

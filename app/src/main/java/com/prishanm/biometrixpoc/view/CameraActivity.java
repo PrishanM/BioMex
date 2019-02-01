@@ -12,12 +12,14 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.Gson;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.prishanm.biometrixpoc.R;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
@@ -61,20 +63,18 @@ import ly.img.android.pesdk.ui.model.state.UiConfigFilter;
  */
 public class CameraActivity extends AppCompatActivity implements Injectable {
 
-    @BindView(R.id.btnCapture) Button btnCapture;
+    @BindView(R.id.btnCapture) ImageButton btnCapture;
 
-    @BindView(R.id.btnCheck) Button btnCheck;
+    @BindView(R.id.btnCheck) ImageButton btnCheck;
 
-    @BindView(R.id.btnEnhance) Button btnEnhance;
+    @BindView(R.id.btnNext) ImageButton btnNext;
 
     @BindView(R.id.imgCapture) ImageView imgImage;
-
-    @BindView(R.id.txtCapture) TextView txtData;
 
     private Context _Context;
     private Uri resultURI;
     private ProgressDialog progressDialog;
-    private boolean isDataValid = false;
+    private boolean isDataValid,isNewID = false;
 
     private static final int requestPermissionID = 101;
 
@@ -82,10 +82,9 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
     private static final int CAPTURE_IMAGE = 1000;
 
     public static int PESDK_RESULT = 1;
-
-    private ActivityCameraBinding activityCameraBinding;
     private CameraViewModel cameraViewModel;
     private CustomerDetailsModel detailsModel;
+    private ActivityCameraBinding activityCameraBinding;
 
     @Nullable
     @Inject
@@ -106,10 +105,11 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
 
         activityCameraBinding.setCameraViewModel(cameraViewModel);
+        activityCameraBinding.setIsImageCaptured(false);
         _Context = this;
     }
 
-    @OnClick({R.id.btnCapture,R.id.btnCheck,R.id.btnEnhance})
+    @OnClick({R.id.btnCapture,R.id.btnCheck,R.id.btnNext})
     public void setButtonOnClickEvent(View view){
         if (view.getId() == R.id.btnCapture) {
 
@@ -126,25 +126,54 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         } else if (view.getId() == R.id.btnCheck) {
 
+            if( resultURI!= null ){
+                //showBarcodeScanner();
+                progressDialog = ApplicationCommons.showProgressDialog(_Context,"Validating...", ProgressDialog.STYLE_SPINNER);
 
-            progressDialog = ApplicationCommons.showProgressDialog(_Context,"Validating...", ProgressDialog.STYLE_SPINNER);
+                progressDialog.show();
 
-            progressDialog.show();
-
-            String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
-            //Call ViewModel Repository Method to check the ID validity
-            cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
-
-
-
-            //Observe ViewModel changes
-            observeViewModel(cameraViewModel);
+                String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
+                //Call ViewModel Repository Method to check the ID validity
+                cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
 
 
 
+                //Observe ViewModel changes
+                observeViewModel(cameraViewModel);
+            } else {
+                Toast.makeText(_Context,"Capture the image to validate.",Toast.LENGTH_SHORT).show();
+            }
 
-        } else if(view.getId() == R.id.btnEnhance){
-            openEditor(resultURI);
+
+
+
+        } else if(view.getId() == R.id.btnNext){
+
+            if(isDataValid){
+
+                Gson gson = new Gson();
+                String customerDataObjectAsAString = gson.toJson(detailsModel);
+
+                if(isNewID){
+                    Intent intent = new Intent(CameraActivity.this,NewIdActivity.class);
+                    intent.putExtra("CUSTOMER_DATA",customerDataObjectAsAString);
+                    startActivity(intent);
+                } else {
+                    /*Intent intent = new Intent(CameraActivity.this,NewIdActivity.class);
+                    startActivity(intent);*/
+                }
+                Log.d("SUCCESS","Done");
+            } else {
+
+                AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
+                        "Error",
+                        "Some data are missing! Please check and proceed again.",
+                        "OK",
+                        null);
+
+                errorDialog.show();
+
+            }
         }
     }
 
@@ -165,10 +194,11 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         detailsModel = new CustomerDetailsModel();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Customer Information");
 
         if(idDetectionResponse.getResultcode().equalsIgnoreCase("00") ){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Customer Information");
 
             View customLayout = getLayoutInflater().inflate(R.layout.layout_cutomer_info, null);
             builder.setView(customLayout);
@@ -201,10 +231,6 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 layoutName.setVisibility(View.VISIBLE);
             }
 
-            /*Gson gson = new Gson();
-            String studentDataObjectAsAString = gson.toJson(idDetectionResponse);*/
-
-
 
             builder.setNegativeButton("Wrong", (dialog, which) -> {
                 isDataValid = false;
@@ -213,21 +239,41 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
             });
 
             builder.setPositiveButton("Correct", (dialog, which) -> {
-                isDataValid = true;
-                detailsModel.setSessionId(idDetectionResponse.getSessionId());
-                detailsModel.setIdentityType(idDetectionResponse.getIdType());
-                detailsModel.setIdNumber(idDetectionResponse.getIdNumber());
 
-                if( idDetectionResponse.getName() != null && !idDetectionResponse.getName().isEmpty()){
-                    detailsModel.setName(idDetectionResponse.getName());
-                }else {
-                    detailsModel.setName(inputName.getText().toString());
-                }
+            });
 
-                if( idDetectionResponse.getOtherIdNumber() != null && !idDetectionResponse.getOtherIdNumber().isEmpty()){
-                    detailsModel.setOtherIdNumber(idDetectionResponse.getOtherIdNumber());
+            AlertDialog alertDialog = builder.create();
+
+            alertDialog.show();
+
+            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+
+                if((inputName.getText().toString()==null || inputName.getText().toString().isEmpty()) && (idDetectionResponse.getName() == null || idDetectionResponse.getName().isEmpty())){
+                    inputName.setError("Name cannot be empty");
+                } else {
+                    isDataValid = true;
+                    detailsModel.setSessionId(idDetectionResponse.getSessionId());
+                    detailsModel.setIdentityType(idDetectionResponse.getIdType());
+                    detailsModel.setIdNumber(idDetectionResponse.getIdNumber());
+
+                    if( idDetectionResponse.getName() != null && !idDetectionResponse.getName().isEmpty()){
+                        detailsModel.setName(idDetectionResponse.getName());
+                    }else {
+                        detailsModel.setName(inputName.getText().toString());
+                    }
+
+                    if( idDetectionResponse.getOtherIdNumber() != null && !idDetectionResponse.getOtherIdNumber().isEmpty()){
+                        detailsModel.setOtherIdNumber(idDetectionResponse.getOtherIdNumber());
+                    }
+
+                    alertDialog.dismiss();
+
+                    if(idDetectionResponse.getIdType().equalsIgnoreCase("NATIONAL IDENTITY CARD NEW")){
+
+                        isNewID = true;
+                       //showBarcodeScanner();
+                    }
                 }
-                //alertDialog.dismiss();
             });
 
 
@@ -235,11 +281,13 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
             detailsModel.setSessionId(idDetectionResponse.getSessionId());
 
-            builder.setMessage(idDetectionResponse.getResult()+"\nPlease add data manually.");
+            AlertDialog dialogNoData = ApplicationCommons.showAlertDialog(_Context,"Customer Information",
+                    idDetectionResponse.getResult()+"\nPlease add data manually.",
+                    "OK",null);
 
-            builder.setPositiveButton("OK",(dialog, which) -> {
+            dialogNoData.show();
 
-                dialog.dismiss();
+            dialogNoData.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
 
                 AlertDialog.Builder detailsDialogBuider = new AlertDialog.Builder(_Context);
                 detailsDialogBuider.setTitle("Add Customer Information");
@@ -258,26 +306,39 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                 detailsDialogBuider.setPositiveButton("DONE",(dialog1, which1) -> {
 
-                    detailsModel.setIdentityType(selectedIdType[0]);
-                    detailsModel.setIdNumber(inputNic.getText().toString());
-                    detailsModel.setName(inputName.getText().toString());
 
                 });
 
                 AlertDialog detailAlertDialog = detailsDialogBuider.create();
                 detailAlertDialog.show();
 
+                detailAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+                    boolean isValid = true;
+
+                    if(inputNic.getText().toString().isEmpty()){
+                        inputNic.setError("NIC number cannot be empty");
+                        isValid = false;
+                    }
+                    if(inputName.getText().toString().isEmpty()){
+                        inputName.setError("Name cannot be empty");
+                        isValid = false;
+                    }
+
+                    if(isValid){
+                        detailsModel.setIdentityType(selectedIdType[0]);
+                        detailsModel.setIdNumber(inputNic.getText().toString());
+                        detailsModel.setName(inputName.getText().toString());
+
+                        isDataValid = true;
+
+                        detailAlertDialog.dismiss();
+                    }
+                });
+
+                dialogNoData.dismiss();
 
             });
         }
-
-        AlertDialog alertDialog = builder.create();
-
-        alertDialog.show();
-
-
-
-
 
     }
 
@@ -432,6 +493,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                     }
                     imgImage.setImageBitmap(bitmap);
+                    activityCameraBinding.setIsImageCaptured(true);
                 }
             }catch (Exception e){
 
@@ -439,5 +501,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         }
     }
+
+
 
 }

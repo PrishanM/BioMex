@@ -2,6 +2,8 @@ package com.prishanm.biometrixpoc.service.repository;
 
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
+import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
+import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.IdDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 
@@ -64,5 +66,33 @@ public class BiometricRepository {
         });
 
         return data;
+    }
+
+    public LiveData<FaceDetectionResponse> checkMatchingFace(FaceDetectionRequest request){
+
+        final MutableLiveData<FaceDetectionResponse> faceDetectionResponseData = new MutableLiveData<>();
+
+        biometricService.checkMatchingFace(request).enqueue(new Callback<FaceDetectionResponse>() {
+
+            @Override
+            public void onResponse(Call<FaceDetectionResponse> call, Response<FaceDetectionResponse> response) {
+
+                ApplicationCommons.simulateDelay();
+                if(response.code() == 200){
+                    faceDetectionResponseData.setValue(response.body());
+                } else {
+                    Gson gson = new Gson();
+                    FaceDetectionResponse sampleResponse = gson.fromJson(response.errorBody().charStream(),FaceDetectionResponse.class);
+                    faceDetectionResponseData.setValue(sampleResponse);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FaceDetectionResponse> call, Throwable t) {
+                faceDetectionResponseData.setValue(null);
+            }
+        });
+
+        return faceDetectionResponseData;
     }
 }

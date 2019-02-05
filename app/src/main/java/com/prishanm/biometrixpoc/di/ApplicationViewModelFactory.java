@@ -1,17 +1,19 @@
 package com.prishanm.biometrixpoc.di;
 
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.annotation.NonNull;
-import androidx.collection.ArrayMap;
 import android.util.Log;
 
+import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+
+import androidx.annotation.NonNull;
+import androidx.collection.ArrayMap;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 /**
  * Created by Prishan Maduka on 29,January,2019
@@ -26,6 +28,7 @@ public class ApplicationViewModelFactory implements ViewModelProvider.Factory {
         creators = new ArrayMap<>();
 
         creators.put(CameraViewModel.class, viewModelSubComponent::cameraViewModel);
+        creators.put(CameraStepTwoViewModel.class, viewModelSubComponent::cameraStepTwoViewModel);
     }
 
     @NonNull

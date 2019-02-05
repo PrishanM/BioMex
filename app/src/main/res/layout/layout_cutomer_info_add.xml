@@ -7,31 +7,13 @@
     android:gravity="center"
     android:padding="8dp">
 
+    <!-- ID Type -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:weightSum="1.1"
         android:orientation="horizontal"
         android:layout_margin="4dp">
-
-        <!--<TextView
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-            android:layout_height="wrap_content"
-            android:text="ID Type"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="0.1"
-            android:gravity="center"
-            android:layout_height="wrap_content"
-            android:text=":"/>
-
-        <EditText
-            android:id="@+id/txtIdType"
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-            android:layout_height="wrap_content"/>-->
 
         <com.jaredrummler.materialspinner.MaterialSpinner
             android:id="@+id/spinnerIdType"
@@ -41,6 +23,7 @@
 
     </LinearLayout>
 
+    <!-- ID Number -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,42 +31,10 @@
         android:orientation="horizontal"
         android:layout_margin="4dp">
 
-        <!--<TextView
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-            android:layout_height="wrap_content"
-            android:text="ID Number"/>
-
-        &lt;!&ndash;<android.support.design.widget.TextInputLayout
-            android:id="@+id/input_layout_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/input_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_email" />
-
-        </android.support.design.widget.TextInputLayout>&ndash;&gt;
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="0.1"
-            android:gravity="center"
-            android:layout_height="wrap_content"
-            android:text=":"/>
-
-        <TextView
-            android:id="@+id/txtIdNumber"
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-            android:layout_height="wrap_content"/>-->
-
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="ID Number">
+            android:hint="@string/id_number">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputIdNumber"
@@ -96,6 +47,7 @@
 
     </LinearLayout>
 
+    <!-- Name -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -106,7 +58,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name">
+            android:hint="@string/txt_name">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputName"

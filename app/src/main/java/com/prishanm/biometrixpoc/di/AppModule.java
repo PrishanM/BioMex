@@ -31,7 +31,7 @@ public class AppModule {
     @Provides
     BiometricService biometricService(){
         return new Retrofit.Builder()
-                .baseUrl(BiometricService.HTTPS_API_GITHUB_URL)
+                .baseUrl(BiometricService.HTTPS_API_BIOMEX_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build()

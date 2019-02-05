@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">Biometrix POC</string>
+
+    <string name="step_1">STEP 01</string>
+    <string name="following_step_one">Please folow the following steps:</string>
+    <string name="capture_nic">* Capture the front image of NIC/Driving License or Passport</string>
+    <string name="validate_image">* Validate the image captured</string>
+    <string name="scan_with_camera">* If it is a new NIC scan with the camera</string>
+    <string name="proceed_step_2">* Proceed to step 02</string>
+
+    <string name="id_type">ID Type</string>
+    <string name="id_number">ID Number</string>
+    <string name="txt_name">Name</string>
+    <string name="txt_dl_number">D/L Number</string>
+    <string name="txt_semicolon">:</string>
+
+    <string name="step_2">STEP 02</string>
+    <string name="capture_selfie">* Capture a selfie holding your NIC/Driving License or Passport</string>
+    <string name="proceed_step_3">* Proceed to step 03</string>
+
+
 </resources>

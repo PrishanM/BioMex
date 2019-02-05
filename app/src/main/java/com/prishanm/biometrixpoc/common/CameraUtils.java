@@ -7,6 +7,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -28,6 +32,8 @@ import java.util.Locale;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+
+import static android.content.Context.CAMERA_SERVICE;
 
 /**
  * @author Prishan_inova
@@ -319,5 +325,28 @@ public class CameraUtils {
         }
 
         return ret;
+    }
+
+    public static boolean isFrontCameraAvailable(Context context){
+
+        String backCameraId = null;
+        CameraManager manager = (CameraManager) context.getSystemService(CAMERA_SERVICE);
+        try {
+
+            for(String cameraId:manager.getCameraIdList()){
+                CameraCharacteristics cameraCharacteristics = manager.getCameraCharacteristics(cameraId);
+                Integer facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
+                if(facing== CameraMetadata.LENS_FACING_FRONT) {
+                    backCameraId = cameraId;
+                    break;
+                }
+            }
+
+        }catch (CameraAccessException e){
+
+        }
+
+
+        return (backCameraId!=null);
     }
 }

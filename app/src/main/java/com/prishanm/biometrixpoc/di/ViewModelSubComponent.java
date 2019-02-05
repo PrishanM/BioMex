@@ -1,5 +1,6 @@
 package com.prishanm.biometrixpoc.di;
 
+import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
 import dagger.Subcomponent;
@@ -17,4 +18,6 @@ public interface ViewModelSubComponent {
     }
 
     CameraViewModel cameraViewModel();
+
+    CameraStepTwoViewModel cameraStepTwoViewModel();
 }

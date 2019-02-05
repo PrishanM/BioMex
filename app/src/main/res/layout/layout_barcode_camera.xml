@@ -9,7 +9,7 @@
 
     <com.budiyev.android.codescanner.CodeScannerView
         android:id="@+id/scanner_view"
-        android:layout_weight="0.85"
+        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:autoFocusButtonColor="@android:color/white"
@@ -25,7 +25,7 @@
         app:frameThickness="2dp"
         app:maskColor="#77000000"/>
 
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.15"
@@ -40,7 +40,7 @@
             android:text="Capture"/>
 
 
-    </LinearLayout>
+    </LinearLayout>-->
 
 
 

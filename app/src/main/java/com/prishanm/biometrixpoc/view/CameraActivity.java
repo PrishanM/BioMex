@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.prishanm.biometrixpoc.R;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
+import com.prishanm.biometrixpoc.common.ApplicationMessages;
 import com.prishanm.biometrixpoc.common.CameraUtils;
 import com.prishanm.biometrixpoc.common.FileUtils;
 import com.prishanm.biometrixpoc.databinding.ActivityCameraBinding;
@@ -58,6 +59,8 @@ import ly.img.android.pesdk.ui.activity.ImgLyIntent;
 import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder;
 import ly.img.android.pesdk.ui.model.state.UiConfigFilter;
 
+import static com.prishanm.biometrixpoc.common.ApplicationMessages.CAPTURE_IMAGE;
+
 /**
  * Created by Prishan Maduka on 28,January,2019
  */
@@ -76,10 +79,10 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
     private ProgressDialog progressDialog;
     private boolean isDataValid,isNewID = false;
 
-    private static final int requestPermissionID = 101;
+    /*private static final int requestPermissionID = 101;
 
     //Capture Image Request Code
-    private static final int CAPTURE_IMAGE = 1000;
+    private static final int CAPTURE_IMAGE = 1000;*/
 
     public static int PESDK_RESULT = 1;
     private CameraViewModel cameraViewModel;
@@ -119,7 +122,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 ActivityCompat.requestPermissions(CameraActivity.this,
                         new String[]{Manifest.permission.CAMERA,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        requestPermissionID);
+                        ApplicationMessages.requestPermissionID);
 
                 return;
             }
@@ -344,7 +347,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode != requestPermissionID) {
+        if (requestCode != ApplicationMessages.requestPermissionID) {
             Log.d("ERROR", "Got unexpected permission result: " + requestCode);
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             return;
@@ -415,61 +418,12 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {/*
-        if (resultCode == RESULT_OK && requestCode == PESDK_RESULT) {
-            // Editor has saved an Image.
-            resultURI = data.getParcelableExtra(ImgLyIntent.RESULT_IMAGE_URI);
-            Uri sourceURI = data.getParcelableExtra(ImgLyIntent.SOURCE_IMAGE_URI);
-
-            // Scan result uri to show it up in the Gallery
-            if (resultURI != null) {
-                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).setData(resultURI));
-                try {
-                    Bitmap bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
-                    imgImage.setImageBitmap(bitmap);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // Scan source uri to show it up in the Gallery
-            if (sourceURI != null) {
-                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).setData(sourceURI));
-            }
-
-            Log.i("PESDK", "Source image is located here " + sourceURI);
-            Log.i("PESDK", "Result image is located here " + resultURI);
-
-            // TODO: Do something with the result image
-
-            // OPTIONAL: read the latest state to save it as a serialisation
-            SettingsList lastState = data.getParcelableExtra(ImgLyIntent.SETTINGS_LIST);
-            try {
-                new PESDKFileWriter(lastState).writeJson(new File(
-                        Environment.getExternalStorageDirectory(),
-                        "serialisationReadyToReadWithPESDKFileReader.json"
-                ));
-            } catch (IOException e) { e.printStackTrace(); }
-
-        } else if (resultCode == RESULT_CANCELED && requestCode == PESDK_RESULT) {
-
-            // Editor was canceled
-            Uri sourceURI = data.getParcelableExtra(ImgLyIntent.SOURCE_IMAGE_URI);
-            // TODO: Do something...
-        }*/
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
         if (requestCode == CAPTURE_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
 
                 try {
-
-                    //bitmap = CameraUtils.optimizeBitmap(BITMAP_SAMPLE_SIZE, imageStoragePath);
-                    /*try {
-                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
-                        imgImage.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }*/
 
                     openEditor(resultURI);
 

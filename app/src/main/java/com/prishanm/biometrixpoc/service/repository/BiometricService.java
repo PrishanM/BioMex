@@ -1,5 +1,7 @@
 package com.prishanm.biometrixpoc.service.repository;
 
+import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
+import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.IdDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 
@@ -12,8 +14,11 @@ import retrofit2.http.POST;
  */
 public interface BiometricService {
 
-    String HTTPS_API_GITHUB_URL = "http://13.58.177.44/";
+    String HTTPS_API_BIOMEX_URL = "http://13.58.177.44/";
 
     @POST("/biomex.php/id_detection")
     Call<IdDetectionResponse> checkIdDetection(@Body IdDetectionRequest request);
+
+    @POST("/biomex.php/matching_faces")
+    Call<FaceDetectionResponse> checkMatchingFace(@Body FaceDetectionRequest request);
 }

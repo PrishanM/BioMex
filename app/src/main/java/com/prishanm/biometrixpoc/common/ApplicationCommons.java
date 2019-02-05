@@ -2,7 +2,6 @@ package com.prishanm.biometrixpoc.common;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
@@ -72,11 +71,8 @@ public class ApplicationCommons {
 
         if(negativeButtonText!= null && !negativeButtonText.isEmpty()){
 
-            dialogBuilder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            dialogBuilder.setNegativeButton(negativeButtonText, (dialog, which) -> {
 
-                }
             });
         }
 

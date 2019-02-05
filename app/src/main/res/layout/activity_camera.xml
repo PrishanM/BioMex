@@ -18,7 +18,7 @@
             android:layout_height="0dp"
             android:layout_weight="0.1"
             android:gravity="center"
-            android:text="STEP 01"
+            android:text="@string/step_1"
             android:textSize="24sp"/>
 
         <LinearLayout
@@ -41,35 +41,35 @@
                     android:layout_height="wrap_content"
                     android:textSize="22sp"
                     android:layout_margin="12dp"
-                    android:text="Please folow the following steps:"/>
+                    android:text="@string/following_step_one"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:layout_margin="12dp"
-                    android:text="* Capture the front image of NIC/Driving License or Passport"/>
+                    android:text="@string/capture_nic"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:layout_margin="12dp"
-                    android:text="* Validate the image captured"/>
+                    android:text="@string/validate_image"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:layout_margin="12dp"
-                    android:text="* If it is a new NIC scan with the camera"/>
+                    android:text="@string/scan_with_camera"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:layout_margin="12dp"
-                    android:text="* Proceed to step 02"/>
+                    android:text="@string/proceed_step_2"/>
 
 
             </LinearLayout>

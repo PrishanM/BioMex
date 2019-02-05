@@ -1,6 +1,7 @@
 package com.prishanm.biometrixpoc.di;
 
 import com.prishanm.biometrixpoc.view.CameraActivity;
+import com.prishanm.biometrixpoc.view.CameraStepTwoActivity;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
@@ -14,4 +15,7 @@ public abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     abstract CameraActivity contributeProjectDetailActivity();
+
+    @ContributesAndroidInjector
+    abstract CameraStepTwoActivity contributeCameraStepTwoActivity();
 }

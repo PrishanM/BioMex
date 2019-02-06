@@ -61,7 +61,7 @@ public class ApplicationCommons {
     public static AlertDialog showAlertDialog(Context context, String title, String message, String positiveButtonText, String negativeButtonText){
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
-        dialogBuilder.setTitle("Customer Information");
+        dialogBuilder.setTitle(title);
 
         dialogBuilder.setMessage(message);
 

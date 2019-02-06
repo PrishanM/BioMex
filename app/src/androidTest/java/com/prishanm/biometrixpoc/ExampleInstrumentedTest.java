@@ -11,7 +11,7 @@ import androidx.test.runner.AndroidJUnit4;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Instrumented test, which will execute on an Android device.
+ * Instrumented getTempCreatedFile, which will execute on an Android device.
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() {
-        // Context of the app under test.
+        // Context of the app under getTempCreatedFile.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
         assertEquals("com.prishanm.biometrixpoc", appContext.getPackageName());

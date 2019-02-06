@@ -43,7 +43,6 @@ public class CameraViewModel extends AndroidViewModel {
 
         return idDetectionResponseObservable;
 
-        //Log.d("TEST",base64String);
     }
 
 

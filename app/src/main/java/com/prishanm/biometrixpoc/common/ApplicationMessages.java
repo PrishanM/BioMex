@@ -10,6 +10,11 @@ public class ApplicationMessages {
     //Capture Image Request Code
     public static final int CAPTURE_IMAGE = 1000;
 
+    public static final String FOLDER_NAME = "Biomex";
+
+    //File provider
+    public static final String APPLICATION_FILE_PROVIDER = "com.prishanm.biometrixpoc.fileprovider";
+
     public static final String TAG_INTENT_CUSTOMER_DATA = "CUSTOMER_DATA";
 
     public static final String DATA_MISMATCH = "Scaned data doesn't match with the ID details.";

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -32,6 +33,7 @@ import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -43,6 +45,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -60,6 +63,7 @@ import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder;
 import ly.img.android.pesdk.ui.model.state.UiConfigFilter;
 
 import static com.prishanm.biometrixpoc.common.ApplicationMessages.CAPTURE_IMAGE;
+import static com.prishanm.biometrixpoc.common.ApplicationMessages.FOLDER_NAME;
 
 /**
  * Created by Prishan Maduka on 28,January,2019
@@ -79,15 +83,11 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
     private ProgressDialog progressDialog;
     private boolean isDataValid,isNewID = false;
 
-    /*private static final int requestPermissionID = 101;
-
-    //Capture Image Request Code
-    private static final int CAPTURE_IMAGE = 1000;*/
-
     public static int PESDK_RESULT = 1;
     private CameraViewModel cameraViewModel;
     private CustomerDetailsModel detailsModel;
     private ActivityCameraBinding activityCameraBinding;
+    private File testFile;
 
     @Nullable
     @Inject
@@ -341,6 +341,21 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 dialogNoData.dismiss();
 
             });
+        } else if(idDetectionResponse.getResultcode()!=null){
+            isDataValid = false;
+
+            AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
+                    ApplicationMessages.TITLE_ERROR,
+                    idDetectionResponse.getResult(),
+                    "OK",
+                    null);
+
+            errorDialog.show();
+
+            errorDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> errorDialog.dismiss());
+
+
+
         }
 
     }
@@ -364,15 +379,21 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
     private void captureImage() {
 
-        /*SettingsList settingsList = createPesdkSettingsList();
-
-        new CameraPreviewBuilder(this)
-                .setSettingsList(settingsList)
-                .startActivityForResult(this, PESDK_RESULT);*/
-
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        resultURI = FileUtils.getOutputImageUri(_Context);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        testFile = FileUtils.getTempCreatedFile();
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        {
+            resultURI = FileProvider.getUriForFile(_Context,
+                    ApplicationMessages.APPLICATION_FILE_PROVIDER,
+                    testFile);
+        } else {
+            resultURI = Uri.fromFile(testFile);
+        }
+
         intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
+
 
         startActivityForResult(intent, CAPTURE_IMAGE);
 
@@ -398,7 +419,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         // Set custom editor image export settings
         settingsList.getSettingsModel(EditorSaveSettings.class)
-                .setExportDir(Directory.DCIM, FileUtils.FOLDER_NAME)
+                .setExportDir(Directory.DCIM, FOLDER_NAME)
                 .setExportPrefix("IMGR_"+timeStamp)
                 .setSavePolicy(EditorSaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT);
 
@@ -423,14 +444,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
         if (requestCode == CAPTURE_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
 
-                try {
-
-                    openEditor(resultURI);
-
-
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
+                openEditor(resultURI);
 
             }
         } else if(resultCode == RESULT_OK && requestCode == PESDK_RESULT){
@@ -440,12 +454,8 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
             try {
                 if(resultUri != null){
                     Bitmap bitmap;
-                    if(FileUtils.copyFileFromUri(resultUri,resultURI)){
-                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
-                    } else {
-                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultUri);
-
-                    }
+                    resultURI = resultUri;
+                    bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultUri);
                     imgImage.setImageBitmap(bitmap);
                     activityCameraBinding.setIsImageCaptured(true);
                 }

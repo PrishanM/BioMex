@@ -11,7 +11,7 @@ import com.budiyev.android.codescanner.CodeScannerView;
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.R;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
-import com.prishanm.biometrixpoc.common.ApplicationMessages;
+import com.prishanm.biometrixpoc.common.ApplicationConstants;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 
 import androidx.appcompat.app.AlertDialog;
@@ -45,7 +45,7 @@ public class NewIdActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        customerDetailsGson = getIntent().getStringExtra(ApplicationMessages.TAG_INTENT_CUSTOMER_DATA);
+        customerDetailsGson = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
         if(customerDetailsGson != null){
             Gson gson = new Gson();
             customerDetails = gson.fromJson(customerDetailsGson, CustomerDetailsModel.class);
@@ -64,18 +64,12 @@ public class NewIdActivity extends AppCompatActivity {
             String nicNumber = lines[1];
             String fullName = lines[6];
 
-            Log.d("XXXXXX NAME",fullName);
-            Log.d("XXXXXX NIC",nicNumber);
-
-            Log.d("YYYYYY NAME",customerDetails.getName());
-            Log.d("YYYYYY NIC",customerDetails.getIdNumber());
-
             codeScanner.stopPreview();
             AlertDialog resultDialog = ApplicationCommons.showAlertDialog(_Context,
-                    ApplicationMessages.TITLE_CUSTOMER_DETAILS,
+                    ApplicationConstants.TITLE_CUSTOMER_DETAILS,
                     result.getText(),
-                    ApplicationMessages.TEXT_CORRECT,
-                    ApplicationMessages.TEXT_WRONG);
+                    ApplicationConstants.TEXT_CORRECT,
+                    ApplicationConstants.TEXT_WRONG);
 
             resultDialog.show();
 
@@ -94,15 +88,15 @@ public class NewIdActivity extends AppCompatActivity {
                         resultDialog.dismiss();
 
                         Intent intent = new Intent(NewIdActivity.this,CameraStepTwoActivity.class);
-                        intent.putExtra(ApplicationMessages.TAG_INTENT_CUSTOMER_DATA,customerDetailsGson);
+                        intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDetailsGson);
                         startActivity(intent);
                         finish();
 
                     }else {
                         isValid = false;
                         AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
-                                ApplicationMessages.TITLE_ERROR,
-                                ApplicationMessages.DATA_MISMATCH,
+                                ApplicationConstants.TITLE_ERROR,
+                                ApplicationConstants.DATA_MISMATCH,
                                 "OK",
                                 null);
 
@@ -134,13 +128,13 @@ public class NewIdActivity extends AppCompatActivity {
         /*} else if(view.getId() == R.id.btnNext){
             if(isValid){
                 Intent intent = new Intent(NewIdActivity.this,CameraStepTwoActivity.class);
-                intent.putExtra(ApplicationMessages.TAG_INTENT_CUSTOMER_DATA,customerDetailsGson);
+                intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDetailsGson);
                 startActivity(intent);
                 finish();
             } else {
                 AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
-                        ApplicationMessages.TITLE_ERROR,
-                        ApplicationMessages.DATA_MISMATCH,
+                        ApplicationConstants.TITLE_ERROR,
+                        ApplicationConstants.DATA_MISMATCH,
                         "OK",
                         null);
 

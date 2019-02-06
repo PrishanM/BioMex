@@ -1,16 +1,22 @@
 package com.prishanm.biometrixpoc.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.R;
-import com.prishanm.biometrixpoc.common.ApplicationMessages;
+import com.prishanm.biometrixpoc.common.ApplicationConstants;
+import com.prishanm.biometrixpoc.common.CameraUtils;
+import com.prishanm.biometrixpoc.common.FileUtils;
 import com.prishanm.biometrixpoc.databinding.ActivityCameraStepTwoBinding;
 import com.prishanm.biometrixpoc.di.Injectable;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
@@ -27,6 +33,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import dagger.android.AndroidInjection;
+import ly.img.android.pesdk.backend.model.state.EditorLoadSettings;
+import ly.img.android.pesdk.backend.model.state.manager.SettingsList;
+import ly.img.android.pesdk.ui.activity.ImgLyIntent;
+import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder;
 
 /**
  * Created by Prishan Maduka on 01,February,2019
@@ -76,7 +86,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        customerDetailsGson = getIntent().getStringExtra(ApplicationMessages.TAG_INTENT_CUSTOMER_DATA);
+        customerDetailsGson = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
         if(customerDetailsGson != null){
             Gson gson = new Gson();
             customerDetails = gson.fromJson(customerDetailsGson, CustomerDetailsModel.class);
@@ -90,35 +100,72 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
     public void setButtonOnClickEvent(View view){
 
         if(view.getId() == R.id.btnCapture){
+
             captureImage();
-        } else if(view.getId() == R.id.btnCheck){
 
         } else if(view.getId() == R.id.btnCheck){
+
+            if( resultURI!= null ){
+
+            } else{
+                Toast.makeText(context,ApplicationConstants.CAPTURE_SELFIE_VALIDATE_ERROR,Toast.LENGTH_SHORT).show();
+            }
+
+        } else if(view.getId() == R.id.btnNext){
 
         }
     }
 
     private void captureImage() {
 
-        /*Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        resultURI = FileUtils.getOutputImageUri(context);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        resultURI = FileUtils.tempURI(context);
+
         intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
 
-        boolean getTempCreatedFile = CameraUtils.isFrontCameraAvailable(context);
-
-        Log.d("vvvvvvvvv",String.valueOf(getTempCreatedFile));
-
-        if(CameraUtils.isFrontCameraAvailable(context)){
-            intent.putExtra("android.intent.extras.CAMERA_FACING", 1);
-        }
-
-        startActivityForResult(intent, CAPTURE_IMAGE);*/
+        startActivityForResult(intent, ApplicationConstants.CAPTURE_IMAGE);
 
 
     }
 
+    private void openEditor(Uri inputImage) {
+        SettingsList settingsList = FileUtils.createPesdkSettingsList();
+
+        // Set input image
+        settingsList.getSettingsModel(EditorLoadSettings.class)
+                .setImageSource(inputImage);
+
+        new PhotoEditorBuilder(this)
+                .setSettingsList(settingsList)
+                .startActivityForResult(this, ApplicationConstants.PESDK_RESULT);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ApplicationConstants.CAPTURE_IMAGE) {
+            if (resultCode == Activity.RESULT_OK) {
+
+                openEditor(resultURI);
+
+            }
+        } else if(resultCode == RESULT_OK && requestCode == ApplicationConstants.PESDK_RESULT){
+
+            Uri resultUri = data.getParcelableExtra(ImgLyIntent.RESULT_IMAGE_URI);
+
+            try {
+                if(resultUri != null){
+                    Bitmap bitmap;
+                    resultURI = resultUri;
+                    bitmap = CameraUtils.handleSamplingAndRotationBitmap(context,resultUri);
+                    imgImage.setImageBitmap(bitmap);
+                    cameraStepTwoBinding.setIsImageCaptured(true);
+                }
+            }catch (Exception e){
+
+            }
+
+        }
     }
 }

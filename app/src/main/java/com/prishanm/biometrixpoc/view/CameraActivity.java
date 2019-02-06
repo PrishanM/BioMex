@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -24,7 +23,7 @@ import com.google.gson.Gson;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.prishanm.biometrixpoc.R;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
-import com.prishanm.biometrixpoc.common.ApplicationMessages;
+import com.prishanm.biometrixpoc.common.ApplicationConstants;
 import com.prishanm.biometrixpoc.common.CameraUtils;
 import com.prishanm.biometrixpoc.common.FileUtils;
 import com.prishanm.biometrixpoc.databinding.ActivityCameraBinding;
@@ -33,11 +32,6 @@ import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
@@ -45,7 +39,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -53,17 +46,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import dagger.android.AndroidInjection;
-import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic;
-import ly.img.android.pesdk.backend.model.constant.Directory;
 import ly.img.android.pesdk.backend.model.state.EditorLoadSettings;
-import ly.img.android.pesdk.backend.model.state.EditorSaveSettings;
 import ly.img.android.pesdk.backend.model.state.manager.SettingsList;
 import ly.img.android.pesdk.ui.activity.ImgLyIntent;
 import ly.img.android.pesdk.ui.activity.PhotoEditorBuilder;
-import ly.img.android.pesdk.ui.model.state.UiConfigFilter;
 
-import static com.prishanm.biometrixpoc.common.ApplicationMessages.CAPTURE_IMAGE;
-import static com.prishanm.biometrixpoc.common.ApplicationMessages.FOLDER_NAME;
+import static com.prishanm.biometrixpoc.common.ApplicationConstants.CAPTURE_IMAGE;
+import static com.prishanm.biometrixpoc.common.ApplicationConstants.PESDK_RESULT;
 
 /**
  * Created by Prishan Maduka on 28,January,2019
@@ -83,11 +72,9 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
     private ProgressDialog progressDialog;
     private boolean isDataValid,isNewID = false;
 
-    public static int PESDK_RESULT = 1;
     private CameraViewModel cameraViewModel;
     private CustomerDetailsModel detailsModel;
     private ActivityCameraBinding activityCameraBinding;
-    private File testFile;
 
     @Nullable
     @Inject
@@ -122,7 +109,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 ActivityCompat.requestPermissions(CameraActivity.this,
                         new String[]{Manifest.permission.CAMERA,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        ApplicationMessages.requestPermissionID);
+                        ApplicationConstants.requestPermissionID);
 
                 return;
             }
@@ -131,7 +118,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
             if( resultURI!= null ){
                 //showBarcodeScanner();
-                progressDialog = ApplicationCommons.showProgressDialog(_Context,"Validating...", ProgressDialog.STYLE_SPINNER);
+                progressDialog = ApplicationCommons.showProgressDialog(_Context,ApplicationConstants.TEXT_VALIDATING, ProgressDialog.STYLE_SPINNER);
 
                 progressDialog.show();
 
@@ -144,7 +131,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 //Observe ViewModel changes
                 observeViewModel(cameraViewModel);
             } else {
-                Toast.makeText(_Context,"Capture the image to validate.",Toast.LENGTH_SHORT).show();
+                Toast.makeText(_Context,ApplicationConstants.CAPTURE_IMAGE_VALIDATE_ERROR,Toast.LENGTH_SHORT).show();
             }
 
 
@@ -159,18 +146,17 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                 if(isNewID){
                     Intent intent = new Intent(CameraActivity.this,NewIdActivity.class);
-                    intent.putExtra("CUSTOMER_DATA",customerDataObjectAsAString);
+                    intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDataObjectAsAString);
                     startActivity(intent);
                 } else {
                     /*Intent intent = new Intent(CameraActivity.this,NewIdActivity.class);
                     startActivity(intent);*/
                 }
-                Log.d("SUCCESS","Done");
             } else {
 
                 AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
-                        "Error",
-                        "Some data are missing! Please check and proceed again.",
+                        ApplicationConstants.TITLE_ERROR,
+                        ApplicationConstants.CUSTOMER_DATA_MISSING_ERROR,
                         "OK",
                         null);
 
@@ -198,10 +184,10 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
         detailsModel = new CustomerDetailsModel();
 
 
-        if(idDetectionResponse.getResultcode().equalsIgnoreCase("00") ){
+        if(idDetectionResponse.getResultcode().equalsIgnoreCase(ApplicationConstants.SUCCESS_RESPONSE_CODE) ){
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Customer Information");
+            builder.setTitle(ApplicationConstants.TITLE_CUSTOMER_DETAILS);
 
             View customLayout = getLayoutInflater().inflate(R.layout.layout_cutomer_info, null);
             builder.setView(customLayout);
@@ -235,13 +221,13 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
             }
 
 
-            builder.setNegativeButton("Wrong", (dialog, which) -> {
+            builder.setNegativeButton(ApplicationConstants.TEXT_WRONG, (dialog, which) -> {
                 isDataValid = false;
                 //alertDialog.dismiss();
 
             });
 
-            builder.setPositiveButton("Correct", (dialog, which) -> {
+            builder.setPositiveButton(ApplicationConstants.TEXT_CORRECT, (dialog, which) -> {
 
             });
 
@@ -271,7 +257,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                     alertDialog.dismiss();
 
-                    if(idDetectionResponse.getIdType().equalsIgnoreCase("NATIONAL IDENTITY CARD NEW")){
+                    if(idDetectionResponse.getIdType().equalsIgnoreCase(ApplicationConstants.ID_NIC_NEW)){
 
                         isNewID = true;
                        //showBarcodeScanner();
@@ -280,34 +266,36 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
             });
 
 
-        } else if(idDetectionResponse.getResultcode().equalsIgnoreCase("12") ){
+        } else if(idDetectionResponse.getResultcode().equalsIgnoreCase(ApplicationConstants.UNABLE_TO_FIND_ID_NUMBER_RESPONSE_CODE) ){
 
             detailsModel.setSessionId(idDetectionResponse.getSessionId());
 
-            AlertDialog dialogNoData = ApplicationCommons.showAlertDialog(_Context,"Customer Information",
-                    idDetectionResponse.getResult()+"\nPlease add data manually.",
-                    "OK",null);
+            AlertDialog dialogNoData = ApplicationCommons.showAlertDialog(_Context,
+                    ApplicationConstants.TITLE_CUSTOMER_DETAILS,
+                    idDetectionResponse.getResult()+"\n"+ApplicationConstants.ADD_MISSING_DATA,
+                    "OK",
+                    null);
 
             dialogNoData.show();
 
             dialogNoData.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
 
                 AlertDialog.Builder detailsDialogBuider = new AlertDialog.Builder(_Context);
-                detailsDialogBuider.setTitle("Add Customer Information");
+                detailsDialogBuider.setTitle(ApplicationConstants.TITLE_CUSTOMER_DETAILS);
 
                 View customDataLayout = getLayoutInflater().inflate(R.layout.layout_cutomer_info_add, null);
                 detailsDialogBuider.setView(customDataLayout);
 
-                final String[] selectedIdType = {"DRIVING LICENCE"};
+                final String[] selectedIdType = {ApplicationConstants.ID_NIC_OLD};
 
                 MaterialSpinner spinnerIdType = customDataLayout.findViewById(R.id.spinnerIdType);
-                spinnerIdType.setItems("DRIVING LICENCE", "NATIONAL IDENTITY CARD OLD", "NATIONAL IDENTITY CARD NEW", "PASSPORT");
+                spinnerIdType.setItems(ApplicationConstants.ID_DRIVING_LICENSE, ApplicationConstants.ID_NIC_OLD, ApplicationConstants.ID_NIC_NEW, ApplicationConstants.ID_PASSPORT);
                 spinnerIdType.setOnItemSelectedListener((MaterialSpinner.OnItemSelectedListener<String>) (view, position, id, item) -> selectedIdType[0] = item);
 
                 TextInputEditText inputNic = customDataLayout.findViewById(R.id.inputIdNumber);
                 TextInputEditText inputName = customDataLayout.findViewById(R.id.inputName);
 
-                detailsDialogBuider.setPositiveButton("DONE",(dialog1, which1) -> {
+                detailsDialogBuider.setPositiveButton(ApplicationConstants.TEXT_DONE,(dialog1, which1) -> {
 
 
                 });
@@ -319,11 +307,11 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                     boolean isValid = true;
 
                     if(inputNic.getText().toString().isEmpty()){
-                        inputNic.setError("NIC number cannot be empty");
+                        inputNic.setError(ApplicationConstants.EMPTY_NIC_NUMBER_ERROR);
                         isValid = false;
                     }
                     if(inputName.getText().toString().isEmpty()){
-                        inputName.setError("Name cannot be empty");
+                        inputName.setError(ApplicationConstants.EMPTY_NAME_ERROR);
                         isValid = false;
                     }
 
@@ -345,7 +333,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
             isDataValid = false;
 
             AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
-                    ApplicationMessages.TITLE_ERROR,
+                    ApplicationConstants.TITLE_ERROR,
                     idDetectionResponse.getResult(),
                     "OK",
                     null);
@@ -362,7 +350,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode != ApplicationMessages.requestPermissionID) {
+        if (requestCode != ApplicationConstants.requestPermissionID) {
             Log.d("ERROR", "Got unexpected permission result: " + requestCode);
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             return;
@@ -381,26 +369,17 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        testFile = FileUtils.getTempCreatedFile();
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-        {
-            resultURI = FileProvider.getUriForFile(_Context,
-                    ApplicationMessages.APPLICATION_FILE_PROVIDER,
-                    testFile);
-        } else {
-            resultURI = Uri.fromFile(testFile);
-        }
+        resultURI = FileUtils.tempURI(_Context);
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
-
 
         startActivityForResult(intent, CAPTURE_IMAGE);
 
 
     }
 
-    private SettingsList createPesdkSettingsList() {
+    /*private SettingsList createPesdkSettingsList() {
 
         // Create a empty new SettingsList and apply the changes on this referance.
         SettingsList settingsList = new SettingsList();
@@ -424,10 +403,10 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 .setSavePolicy(EditorSaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT);
 
         return settingsList;
-    }
+    }*/
 
     private void openEditor(Uri inputImage) {
-        SettingsList settingsList = createPesdkSettingsList();
+        SettingsList settingsList = FileUtils.createPesdkSettingsList();
 
         // Set input image
         settingsList.getSettingsModel(EditorLoadSettings.class)

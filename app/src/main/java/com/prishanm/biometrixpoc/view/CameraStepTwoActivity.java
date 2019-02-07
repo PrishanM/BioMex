@@ -1,12 +1,15 @@
 package com.prishanm.biometrixpoc.view;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -14,17 +17,23 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.R;
+import com.prishanm.biometrixpoc.common.ApplicationCommons;
 import com.prishanm.biometrixpoc.common.ApplicationConstants;
 import com.prishanm.biometrixpoc.common.CameraUtils;
 import com.prishanm.biometrixpoc.common.FileUtils;
 import com.prishanm.biometrixpoc.databinding.ActivityCameraStepTwoBinding;
 import com.prishanm.biometrixpoc.di.Injectable;
+import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
+import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
+
+import java.io.ByteArrayOutputStream;
 
 import javax.inject.Inject;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
@@ -62,8 +71,10 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
     private Context context;
 
     private String customerDetailsGson;
+    private boolean isValid = false;
     private Uri resultURI;
     private CustomerDetailsModel customerDetails;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,6 +97,8 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        progressDialog = ApplicationCommons.showProgressDialog(context,ApplicationConstants.TEXT_VALIDATING, ProgressDialog.STYLE_SPINNER);
+
         customerDetailsGson = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
         if(customerDetailsGson != null){
             Gson gson = new Gson();
@@ -107,14 +120,141 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
             if( resultURI!= null ){
 
+                progressDialog.show();
+
+                FaceDetectionRequest faceDetectionRequest = new FaceDetectionRequest();
+
+                /** testing code **/
+
+                Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_selfie);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                bmp.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+
+                byte[] byteArrayImage = baos.toByteArray();
+
+                String base64Image = "";
+
+                base64Image = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+
+                faceDetectionRequest.setImage(base64Image);
+
+                /** End of testing code **/
+
+                //faceDetectionRequest.setImage(CameraUtils.convertToBase64(resultURI.getPath()));
+                faceDetectionRequest.setSessionId(customerDetails.getSessionId());
+
+                viewModel.checkMatchingFace(faceDetectionRequest);
+
+                observeViewModel();
+
             } else{
                 Toast.makeText(context,ApplicationConstants.CAPTURE_SELFIE_VALIDATE_ERROR,Toast.LENGTH_SHORT).show();
             }
 
         } else if(view.getId() == R.id.btnNext){
 
+            if(isValid){
+
+                Gson gson = new Gson();
+                String customerDataObjectAsAString = gson.toJson(customerDetails);
+
+                Intent intent= new Intent(CameraStepTwoActivity.this, CameraStepThreeActivity.class);
+
+                intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDataObjectAsAString);
+                startActivity(intent);
+
+            } else {
+
+            }
         }
     }
+
+    private void observeViewModel() {
+        viewModel.getFaceDetectionResponseObservable().observe(this,faceDetectionResponse -> {
+
+            if(progressDialog!=null)
+                progressDialog.dismiss();
+
+            if(faceDetectionResponse!= null){
+                proceedWithResponse(faceDetectionResponse);
+            }
+        });
+    }
+
+    private void proceedWithResponse(FaceDetectionResponse faceDetectionResponse){
+
+        if(faceDetectionResponse.getResultcode().equalsIgnoreCase(ApplicationConstants.SUCCESS_RESPONSE_CODE)){
+
+            customerDetails.setSessionId(faceDetectionResponse.getSessionId());
+
+            progressDialog.show();
+
+            viewModel.getRandomLiveAction(faceDetectionResponse.getSessionId());
+
+            observeLiveAction();
+
+        } else {
+
+            isValid = false;
+
+            AlertDialog errorDialog = ApplicationCommons.showAlertDialog(context,
+                    ApplicationConstants.TITLE_ERROR,
+                    faceDetectionResponse.getResult(),
+                    "OK",
+                    null);
+
+            errorDialog.show();
+
+            errorDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> errorDialog.dismiss());
+        }
+
+    }
+
+    private void observeLiveAction() {
+
+        viewModel.getRandomLiveActionIdObservable().observe(this,liveActionIdResponse -> {
+
+            if(progressDialog.isShowing()){
+                progressDialog.dismiss();
+            }
+
+            if(liveActionIdResponse.getResultcode().equalsIgnoreCase(ApplicationConstants.SUCCESS_RESPONSE_CODE)){
+
+                isValid = true;
+
+                AlertDialog successDialog = ApplicationCommons.showAlertDialog(context,
+                        ApplicationConstants.TITLE_CONGRATULATIONS,
+                        ApplicationConstants.TEXT_SUCCESSFULLY_FACE_VERIFIED+"\n"+ApplicationConstants.TEXT_PROCEED_FINAL_STEP,
+                        "OK",
+                        null);
+
+                successDialog.show();
+
+                successDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> successDialog.dismiss());
+
+            } else {
+
+                isValid = false;
+
+                AlertDialog errorDialog = ApplicationCommons.showAlertDialog(context,
+                        ApplicationConstants.TITLE_ERROR,
+                        liveActionIdResponse.getResult(),
+                        "OK",
+                        null);
+
+                errorDialog.show();
+
+                errorDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> errorDialog.dismiss());
+
+            }
+
+
+
+        });
+    }
+
 
     private void captureImage() {
 

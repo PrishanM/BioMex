@@ -2,6 +2,7 @@ package com.prishanm.biometrixpoc.di;
 
 import android.util.Log;
 
+import com.prishanm.biometrixpoc.viewModel.CameraStepThreeViewModel;
 import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
@@ -29,6 +30,7 @@ public class ApplicationViewModelFactory implements ViewModelProvider.Factory {
 
         creators.put(CameraViewModel.class, viewModelSubComponent::cameraViewModel);
         creators.put(CameraStepTwoViewModel.class, viewModelSubComponent::cameraStepTwoViewModel);
+        creators.put(CameraStepThreeViewModel.class, viewModelSubComponent::cameraStepThreeViewModel);
     }
 
     @NonNull

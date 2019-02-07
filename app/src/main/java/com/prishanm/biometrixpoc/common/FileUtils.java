@@ -41,10 +41,43 @@ public class FileUtils {
 
     }
 
+    public static File getTempCreatedVideoFile(){
+
+        final String imageFileName = "VID_" + System.currentTimeMillis();
+
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), FOLDER_NAME);
+        storageDir.mkdirs();
+        File file = null;
+        try {
+            file = File.createTempFile(imageFileName, ".mp4", storageDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+    }
+
     public static Uri tempURI(Context context){
         Uri resultURI = null;
 
         File tempFile = getTempCreatedFile();
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        {
+            resultURI = FileProvider.getUriForFile(context,
+                    ApplicationConstants.APPLICATION_FILE_PROVIDER,
+                    tempFile);
+        } else {
+            resultURI = Uri.fromFile(tempFile);
+        }
+
+        return resultURI;
+    }
+
+    public static Uri tempVideoURI(Context context){
+        Uri resultURI = null;
+
+        File tempFile = getTempCreatedVideoFile();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         {

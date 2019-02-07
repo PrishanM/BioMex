@@ -12,8 +12,9 @@ public class ApplicationConstants {
     public static final String SUCCESS_RESPONSE_CODE = "00";
     public static final String UNABLE_TO_FIND_ID_NUMBER_RESPONSE_CODE = "12";
 
-    //Capture Image Request Code
+    //Capture Image & Video Request Code
     public static final int CAPTURE_IMAGE = 1000;
+    public static final int CAPTURE_VIDEO = 1010;
 
     public static final String FOLDER_NAME = "Biomex";
 
@@ -29,11 +30,17 @@ public class ApplicationConstants {
     //Text Constants and Messages
     public static final String TAG_INTENT_CUSTOMER_DATA = "CUSTOMER_DATA";
     public static final String TITLE_CUSTOMER_DETAILS = "Customer Details";
+    public static final String TITLE_SUCCESSFUL = "Successful";
+    public static final String TITLE_CONGRATULATIONS = "Congratulations";
     public static final String TEXT_CORRECT = "Correct";
     public static final String TEXT_WRONG = "Wrong";
     public static final String TEXT_DONE = "DONE";
     public static final String TEXT_VALIDATING = "Validating ...";
     public static final String ADD_MISSING_DATA = "Please add data manually.";
+
+    //Success Messages
+    public static final String TEXT_SUCCESSFULLY_FACE_VERIFIED = "Your face is successfully verified with the ID";
+    public static final String TEXT_PROCEED_FINAL_STEP = "Proceed the final step";
 
     /** ERROR MESSAGES **/
     public static final String DATA_MISMATCH = "Scaned data doesn't match with the ID details.";

@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -31,6 +33,8 @@ import com.prishanm.biometrixpoc.di.Injectable;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
+
+import java.io.ByteArrayOutputStream;
 
 import javax.inject.Inject;
 
@@ -122,9 +126,29 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                 progressDialog.show();
 
-                String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
+                //String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
                 //Call ViewModel Repository Method to check the ID validity
-                cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
+
+                /** testing code **/
+
+                Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_id);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                bmp.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+
+                byte[] byteArrayImage = baos.toByteArray();
+
+                String base64Image = "";
+
+                base64Image = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+
+                cameraViewModel.checkIdValidity(base64Image);
+
+                /** End of testing code **/
+
+
+                //cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
 
 
 
@@ -144,14 +168,20 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 Gson gson = new Gson();
                 String customerDataObjectAsAString = gson.toJson(detailsModel);
 
+                Intent intent = null;
+
                 if(isNewID){
-                    Intent intent = new Intent(CameraActivity.this,NewIdActivity.class);
-                    intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDataObjectAsAString);
-                    startActivity(intent);
+                    intent = new Intent(CameraActivity.this,NewIdActivity.class);
+
                 } else {
-                    /*Intent intent = new Intent(CameraActivity.this,NewIdActivity.class);
-                    startActivity(intent);*/
+                    intent = new Intent(CameraActivity.this,CameraStepTwoActivity.class);
+
                 }
+
+                intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDataObjectAsAString);
+                startActivity(intent);
+
+
             } else {
 
                 AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
@@ -238,7 +268,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
             alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
 
                 if((inputName.getText().toString()==null || inputName.getText().toString().isEmpty()) && (idDetectionResponse.getName() == null || idDetectionResponse.getName().isEmpty())){
-                    inputName.setError("Name cannot be empty");
+                    inputName.setError(ApplicationConstants.EMPTY_NAME_ERROR);
                 } else {
                     isDataValid = true;
                     detailsModel.setSessionId(idDetectionResponse.getSessionId());

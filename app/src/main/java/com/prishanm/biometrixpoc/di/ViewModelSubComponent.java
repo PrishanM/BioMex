@@ -1,5 +1,6 @@
 package com.prishanm.biometrixpoc.di;
 
+import com.prishanm.biometrixpoc.viewModel.CameraStepThreeViewModel;
 import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
@@ -20,4 +21,6 @@ public interface ViewModelSubComponent {
     CameraViewModel cameraViewModel();
 
     CameraStepTwoViewModel cameraStepTwoViewModel();
+
+    CameraStepThreeViewModel cameraStepThreeViewModel();
 }

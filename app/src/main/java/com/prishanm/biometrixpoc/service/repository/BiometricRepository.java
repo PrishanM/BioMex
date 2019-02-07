@@ -6,6 +6,7 @@ import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.IdDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
+import com.prishanm.biometrixpoc.service.model.LiveActionIdResponse;
 
 import javax.inject.Inject;
 
@@ -94,5 +95,38 @@ public class BiometricRepository {
         });
 
         return faceDetectionResponseData;
+    }
+
+    public LiveData<LiveActionIdResponse> getLiveActionId(String sessionId){
+
+        final MutableLiveData<LiveActionIdResponse> mutableLiveData = new MutableLiveData<>();
+
+        biometricService.getRandomAction(sessionId).enqueue(new Callback<LiveActionIdResponse>() {
+            @Override
+            public void onResponse(Call<LiveActionIdResponse> call, Response<LiveActionIdResponse> response) {
+
+                ApplicationCommons.simulateDelay();
+
+                if(response.code() == 200){
+
+                    mutableLiveData.setValue(response.body());
+
+                } else {
+
+                    Gson gson = new Gson();
+                    LiveActionIdResponse liveActionIdResponse = gson.fromJson(response.errorBody().charStream(),
+                            LiveActionIdResponse.class);
+                    mutableLiveData.setValue(liveActionIdResponse);
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LiveActionIdResponse> call, Throwable t) {
+                mutableLiveData.setValue(null);
+            }
+        });
+
+        return mutableLiveData;
     }
 }

@@ -72,6 +72,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
     private String customerDetailsGson;
     private boolean isValid = false;
+    private int actionId = 1;
     private Uri resultURI;
     private CustomerDetailsModel customerDetails;
     private ProgressDialog progressDialog;
@@ -161,7 +162,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
                 String customerDataObjectAsAString = gson.toJson(customerDetails);
 
                 Intent intent= new Intent(CameraStepTwoActivity.this, CameraStepThreeActivity.class);
-
+                intent.putExtra(ApplicationConstants.TAG_INTENT_ACTION_ID,actionId);
                 intent.putExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA,customerDataObjectAsAString);
                 startActivity(intent);
 
@@ -223,6 +224,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
             if(liveActionIdResponse.getResultcode().equalsIgnoreCase(ApplicationConstants.SUCCESS_RESPONSE_CODE)){
 
                 isValid = true;
+                actionId = liveActionIdResponse.getActionId();
 
                 AlertDialog successDialog = ApplicationCommons.showAlertDialog(context,
                         ApplicationConstants.TITLE_CONGRATULATIONS,
@@ -261,7 +263,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        resultURI = FileUtils.tempURI(context);
+        resultURI = FileUtils.tempURI(context,ApplicationConstants.FILE_TYPE_IMAGE);
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
 

@@ -1,13 +1,19 @@
 package com.prishanm.biometrixpoc.common;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -25,14 +31,24 @@ import static com.prishanm.biometrixpoc.common.ApplicationConstants.FOLDER_NAME;
  */
 public class FileUtils {
 
-    public static File getTempCreatedFile(){
+    public static File getTempCreatedFile(int fileType){
 
-        final String imageFileName = "IMG_" + System.currentTimeMillis();
+        String imageFileName = "";
+        String extension = "";
+
+        if(fileType == ApplicationConstants.FILE_TYPE_IMAGE){
+            imageFileName = ApplicationConstants.IMAGE_PREFIX + System.currentTimeMillis();
+            extension = ApplicationConstants.IMAGE_SUFIX;
+        } else {
+            imageFileName = ApplicationConstants.VIDEO_PREFIX + System.currentTimeMillis();
+            extension = ApplicationConstants.VIDEO_SUFIX;
+        }
+
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), FOLDER_NAME);
         storageDir.mkdirs();
         File file = null;
         try {
-            file = File.createTempFile(imageFileName, ".jpg", storageDir);
+            file = File.createTempFile(imageFileName, extension, storageDir);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,54 +57,29 @@ public class FileUtils {
 
     }
 
-    public static File getTempCreatedVideoFile(){
+    public static Uri tempURI(Context context, int fileType){
 
-        final String imageFileName = "VID_" + System.currentTimeMillis();
+        File tempFile = getTempCreatedFile(fileType);
 
-        File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), FOLDER_NAME);
-        storageDir.mkdirs();
-        File file = null;
-        try {
-            file = File.createTempFile(imageFileName, ".mp4", storageDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return getUriFromFile(context,tempFile);
 
-        return file;
     }
 
-    public static Uri tempURI(Context context){
-        Uri resultURI = null;
 
-        File tempFile = getTempCreatedFile();
+    public static Uri getUriFromFile(Context context,File file){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         {
-            resultURI = FileProvider.getUriForFile(context,
+            return FileProvider.getUriForFile(context,
                     ApplicationConstants.APPLICATION_FILE_PROVIDER,
-                    tempFile);
+                    file);
+
         } else {
-            resultURI = Uri.fromFile(tempFile);
+
+            return Uri.fromFile(file);
+
         }
 
-        return resultURI;
-    }
-
-    public static Uri tempVideoURI(Context context){
-        Uri resultURI = null;
-
-        File tempFile = getTempCreatedVideoFile();
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-        {
-            resultURI = FileProvider.getUriForFile(context,
-                    ApplicationConstants.APPLICATION_FILE_PROVIDER,
-                    tempFile);
-        } else {
-            resultURI = Uri.fromFile(tempFile);
-        }
-
-        return resultURI;
     }
 
     public static SettingsList createPesdkSettingsList() {
@@ -116,4 +107,37 @@ public class FileUtils {
 
         return settingsList;
     }
+
+    public static Bitmap mergeBitmaps(ArrayList<Bitmap> bitmaps){
+
+        Bitmap result = Bitmap.createBitmap(bitmaps.get(0).getWidth() * 2, bitmaps.get(0).getHeight() * 2, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+        Paint paint = new Paint();
+        for (int i = 0; i < bitmaps.size(); i++) {
+            canvas.drawBitmap(bitmaps.get(i), bitmaps.get(i).getWidth() * (i % 2), bitmaps.get(i).getHeight() * (i / 2), paint);
+        }
+        return result;
+    }
+
+    public static File saveBitmap(Bitmap bitmap){
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), FOLDER_NAME);
+        storageDir.mkdirs();
+        File file = null;
+        try {
+            file = File.createTempFile("MEGR_"+ System.currentTimeMillis(), ".jpg", storageDir);
+            file.createNewFile();
+            FileOutputStream fo = new FileOutputStream(file);
+            fo.write(bytes.toByteArray());
+            fo.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+    }
+
 }

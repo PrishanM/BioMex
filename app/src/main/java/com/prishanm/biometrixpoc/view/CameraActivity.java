@@ -400,7 +400,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        resultURI = FileUtils.tempURI(_Context);
+        resultURI = FileUtils.tempURI(_Context,ApplicationConstants.FILE_TYPE_IMAGE);
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
 
@@ -409,31 +409,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
     }
 
-    /*private SettingsList createPesdkSettingsList() {
 
-        // Create a empty new SettingsList and apply the changes on this referance.
-        SettingsList settingsList = new SettingsList();
-
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
-                Locale.getDefault()).format(new Date());
-
-        // If you include our asset Packs and you use our UI you also need to add them to the UI,
-        // otherwise they are only available for the backend
-        // See the specific feature sections of our guides if you want to know how to add our own Assets.
-
-        settingsList.getSettingsModel(UiConfigFilter.class).setFilterList(
-                FilterPackBasic.getFilterPack()
-        );
-
-
-        // Set custom editor image export settings
-        settingsList.getSettingsModel(EditorSaveSettings.class)
-                .setExportDir(Directory.DCIM, FOLDER_NAME)
-                .setExportPrefix("IMGR_"+timeStamp)
-                .setSavePolicy(EditorSaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT);
-
-        return settingsList;
-    }*/
 
     private void openEditor(Uri inputImage) {
         SettingsList settingsList = FileUtils.createPesdkSettingsList();

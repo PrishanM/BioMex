@@ -2,11 +2,14 @@ package com.prishanm.biometrixpoc.service.repository;
 
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
+import com.prishanm.biometrixpoc.common.ApplicationConstants;
 import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.IdDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.LiveActionIdResponse;
+import com.prishanm.biometrixpoc.service.model.LivenessDetectionRequest;
+import com.prishanm.biometrixpoc.service.model.LivenessDetectionResponse;
 
 import javax.inject.Inject;
 
@@ -124,6 +127,39 @@ public class BiometricRepository {
             @Override
             public void onFailure(Call<LiveActionIdResponse> call, Throwable t) {
                 mutableLiveData.setValue(null);
+            }
+        });
+
+        return mutableLiveData;
+    }
+
+    public LiveData<LivenessDetectionResponse> checkLivenessDetection(LivenessDetectionRequest request){
+
+        final MutableLiveData<LivenessDetectionResponse> mutableLiveData = new MutableLiveData<>();
+
+        biometricService.checkLivenesDetection(request).enqueue(new Callback<LivenessDetectionResponse>() {
+            @Override
+            public void onResponse(Call<LivenessDetectionResponse> call, Response<LivenessDetectionResponse> response) {
+
+                ApplicationCommons.simulateDelay();
+
+                if(response.code() == 200){
+                    mutableLiveData.setValue(response.body());
+                } else {
+                    Gson gson = new Gson();
+                    LivenessDetectionResponse liveActionIdResponse = gson.fromJson(response.errorBody().charStream(),
+                            LivenessDetectionResponse.class);
+                    mutableLiveData.setValue(liveActionIdResponse);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LivenessDetectionResponse> call, Throwable t) {
+
+                LivenessDetectionResponse liveActionIdResponse = new LivenessDetectionResponse();
+                liveActionIdResponse.setResultcode(ApplicationConstants.NETWORK_FAILURE_RESPONSE_CODE);
+                liveActionIdResponse.setResult(ApplicationConstants.NETWORK_ERROR);
+                mutableLiveData.setValue(liveActionIdResponse);
             }
         });
 

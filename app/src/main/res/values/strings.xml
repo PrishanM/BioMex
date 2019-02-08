@@ -18,5 +18,8 @@
     <string name="capture_selfie">* Capture a selfie holding your NIC/Driving License or Passport</string>
     <string name="proceed_step_3">* Proceed to step 03</string>
 
+    <string name="step_3">STEP 03</string>
+    <string name="capture_random_action">* Follow the random action and capture 5sec video</string>
+
 
 </resources>

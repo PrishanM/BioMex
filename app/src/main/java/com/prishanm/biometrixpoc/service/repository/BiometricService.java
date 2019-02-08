@@ -5,6 +5,8 @@ import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.IdDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.model.LiveActionIdResponse;
+import com.prishanm.biometrixpoc.service.model.LivenessDetectionRequest;
+import com.prishanm.biometrixpoc.service.model.LivenessDetectionResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -27,4 +29,7 @@ public interface BiometricService {
 
     @GET("/biomex.php/liveness_detection/{sessionId}")
     Call<LiveActionIdResponse> getRandomAction(@Path("sessionId") String sessionId);
+
+    @POST("/biomex.php/liveness_detection")
+    Call<LivenessDetectionResponse> checkLivenesDetection(@Body LivenessDetectionRequest request);
 }

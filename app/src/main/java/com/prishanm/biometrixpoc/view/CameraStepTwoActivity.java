@@ -5,11 +5,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -27,8 +25,6 @@ import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
-
-import java.io.ByteArrayOutputStream;
 
 import javax.inject.Inject;
 
@@ -127,7 +123,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
                 /** testing code **/
 
-                Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_selfie);
+                /*Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_selfie);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -139,11 +135,11 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
                 base64Image = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
 
-                faceDetectionRequest.setImage(base64Image);
+                faceDetectionRequest.setImage(base64Image);*/
 
                 /** End of testing code **/
 
-                //faceDetectionRequest.setImage(CameraUtils.convertToBase64(resultURI.getPath()));
+                faceDetectionRequest.setImage(CameraUtils.convertToBase64(resultURI.getPath()));
                 faceDetectionRequest.setSessionId(customerDetails.getSessionId());
 
                 viewModel.checkMatchingFace(faceDetectionRequest);

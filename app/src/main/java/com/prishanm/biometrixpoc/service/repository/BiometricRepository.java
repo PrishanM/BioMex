@@ -64,8 +64,11 @@ public class BiometricRepository {
 
             @Override
             public void onFailure(Call<IdDetectionResponse> call, Throwable t) {
-                //Log.e("BIOMETRIC ERROR", t.getLocalizedMessage());
-                data.setValue(null);
+
+                IdDetectionResponse detectionResponse = new IdDetectionResponse();
+                detectionResponse.setResultcode(ApplicationConstants.NETWORK_FAILURE_RESPONSE_CODE);
+                detectionResponse.setResult(ApplicationConstants.NETWORK_ERROR);
+                data.setValue(detectionResponse);
             }
         });
 
@@ -93,7 +96,11 @@ public class BiometricRepository {
 
             @Override
             public void onFailure(Call<FaceDetectionResponse> call, Throwable t) {
-                faceDetectionResponseData.setValue(null);
+
+                FaceDetectionResponse faceDetectionResponse = new FaceDetectionResponse();
+                faceDetectionResponse.setResultcode(ApplicationConstants.NETWORK_FAILURE_RESPONSE_CODE);
+                faceDetectionResponse.setResult(ApplicationConstants.NETWORK_ERROR);
+                faceDetectionResponseData.setValue(faceDetectionResponse);
             }
         });
 
@@ -126,7 +133,10 @@ public class BiometricRepository {
 
             @Override
             public void onFailure(Call<LiveActionIdResponse> call, Throwable t) {
-                mutableLiveData.setValue(null);
+                LiveActionIdResponse response = new LiveActionIdResponse();
+                response.setResultcode(ApplicationConstants.NETWORK_FAILURE_RESPONSE_CODE);
+                response.setResult(ApplicationConstants.NETWORK_ERROR);
+                mutableLiveData.setValue(response);
             }
         });
 

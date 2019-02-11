@@ -7,11 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -33,8 +31,6 @@ import com.prishanm.biometrixpoc.di.Injectable;
 import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
-
-import java.io.ByteArrayOutputStream;
 
 import javax.inject.Inject;
 
@@ -98,9 +94,13 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 .get(CameraViewModel.class);
 
 
+
         activityCameraBinding.setCameraViewModel(cameraViewModel);
         activityCameraBinding.setIsImageCaptured(false);
         _Context = this;
+
+        progressDialog = ApplicationCommons.showProgressDialog(_Context,ApplicationConstants.TEXT_VALIDATING, ProgressDialog.STYLE_SPINNER);
+
     }
 
     @OnClick({R.id.btnCapture,R.id.btnCheck,R.id.btnNext})
@@ -122,16 +122,15 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
             if( resultURI!= null ){
                 //showBarcodeScanner();
-                progressDialog = ApplicationCommons.showProgressDialog(_Context,ApplicationConstants.TEXT_VALIDATING, ProgressDialog.STYLE_SPINNER);
 
                 progressDialog.show();
 
-                //String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
+                String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
                 //Call ViewModel Repository Method to check the ID validity
 
                 /** testing code **/
 
-                Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_id);
+                /*Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_id);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -143,12 +142,12 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                 base64Image = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
 
-                cameraViewModel.checkIdValidity(base64Image);
+                cameraViewModel.checkIdValidity(base64Image);*/
 
                 /** End of testing code **/
 
 
-                //cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
+                cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
 
 
 

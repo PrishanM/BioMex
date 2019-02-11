@@ -12,14 +12,17 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.prishanm.biometrixpoc.R;
 import com.prishanm.biometrixpoc.common.ApplicationCommons;
 import com.prishanm.biometrixpoc.common.ApplicationConstants;
+import com.prishanm.biometrixpoc.common.CameraUtils;
 import com.prishanm.biometrixpoc.common.FileUtils;
 import com.prishanm.biometrixpoc.databinding.ActivityCameraStepThreeBinding;
 import com.prishanm.biometrixpoc.di.Injectable;
+import com.prishanm.biometrixpoc.service.model.LivenessDetectionRequest;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraStepThreeViewModel;
 
@@ -62,9 +65,10 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
     private MediaMetadataRetriever mediaMetadataRetriever;
 
     private Context context;
-    private Uri resultURI;
+    private Uri resultURI,mergedImageUri;
     private int actionId;
     private String customerDetailsString;
+    private File savedFile;
     private CustomerDetailsModel customerDetailsModel;
 
     @Override
@@ -161,9 +165,53 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
 
         } else {
 
+            if(savedFile != null){
+
+                progressDialog.show();
+
+                LivenessDetectionRequest request = new LivenessDetectionRequest();
+
+                request.setSessionId(customerDetailsModel.getSessionId());
+                request.setActionId(actionId);
+                request.setImage(CameraUtils.convertToBase64(savedFile.getPath()));
+
+                stepThreeViewModel.checkLivenessDetection(request);
+
+                observeViewModel();
+
+
+            } else {
+                Toast.makeText(context,ApplicationConstants.CAPTURE_IMAGE_VALIDATE_ERROR,Toast.LENGTH_SHORT).show();
+            }
 
         }
         
+    }
+
+    private void observeViewModel() {
+
+        stepThreeViewModel.getLivenessDetectionObservable().observe(this,livenessDetectionResponse -> {
+
+            if(progressDialog.isShowing()){
+                progressDialog.dismiss();
+            }
+
+            if(livenessDetectionResponse!=null){
+
+                AlertDialog alertDialog = ApplicationCommons.showAlertDialog(context,
+                        livenessDetectionResponse.getResultcode().equalsIgnoreCase(ApplicationConstants.SUCCESS_RESPONSE_CODE)? ApplicationConstants.TITLE_CONGRATULATIONS : ApplicationConstants.TITLE_ERROR,
+                        livenessDetectionResponse.getResult(),
+                        "OK",
+                        null);
+
+                alertDialog.show();
+
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+
+                    alertDialog.dismiss();
+                });
+            }
+        });
     }
 
     private void captureVideo() {
@@ -201,8 +249,12 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
             imgImage.setImageBitmap(bitmap);
             cameraStepThreeBinding.setIsImageCaptured(true);
 
-            File savedFile = FileUtils.saveBitmap(bitmap);
-            Uri savedFileUri = FileUtils.getUriFromFile(context,savedFile);
+            savedFile = FileUtils.saveBitmap(bitmap);
+            //mergedImageUri = FileUtils.getUriFromFile(context,savedFile);
+
+            /*Log.d("FROM FILE ----",savedFile.getPath());
+            Log.d("FROM FILE ABSOLUTE ----",savedFile.getAbsolutePath());
+            Log.d("FROM FILE URI ----",mergedImageUri.getPath());*/
 
         }
     }

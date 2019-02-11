@@ -18,7 +18,7 @@ import androidx.lifecycle.LiveData;
  */
 public class CameraStepTwoViewModel extends AndroidViewModel {
 
-    private BiometricRepository repository;
+    private final BiometricRepository repository;
     private LiveData<FaceDetectionResponse> faceDetectionResponseLiveData;
     private LiveData<LiveActionIdResponse> randomLiveActionIdResponse;
 

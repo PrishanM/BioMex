@@ -17,7 +17,7 @@ import androidx.lifecycle.LiveData;
  */
 public class CameraStepThreeViewModel extends AndroidViewModel {
 
-    private BiometricRepository repository;
+    private final BiometricRepository repository;
     private LiveData<LivenessDetectionResponse> livenessDetectionResponseLiveData;
 
     @Inject

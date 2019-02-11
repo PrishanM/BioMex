@@ -76,9 +76,7 @@ public class ApplicationCommons {
             });
         }
 
-        AlertDialog alertDialog = dialogBuilder.create();
-
-        return alertDialog;
+        return dialogBuilder.create();
 
     }
 

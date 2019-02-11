@@ -3,7 +3,6 @@ package com.prishanm.biometrixpoc.view;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import com.budiyev.android.codescanner.CodeScanner;
@@ -31,7 +30,6 @@ public class NewIdActivity extends AppCompatActivity {
     ImageButton btnNext;*/
 
     private Context _Context;
-    private boolean isValid = false;
     private String customerDetailsGson;
     private CustomerDetailsModel customerDetails;
 
@@ -84,7 +82,6 @@ public class NewIdActivity extends AppCompatActivity {
                     }*/
 
                     if(nicNumber.equalsIgnoreCase(customerDetails.getIdNumber())){
-                        isValid = true;
                         resultDialog.dismiss();
 
                         Intent intent = new Intent(NewIdActivity.this,CameraStepTwoActivity.class);
@@ -93,7 +90,6 @@ public class NewIdActivity extends AppCompatActivity {
                         finish();
 
                     }else {
-                        isValid = false;
                         AlertDialog errorDialog = ApplicationCommons.showAlertDialog(_Context,
                                 ApplicationConstants.TITLE_ERROR,
                                 ApplicationConstants.DATA_MISMATCH,
@@ -109,7 +105,6 @@ public class NewIdActivity extends AppCompatActivity {
             resultDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    isValid = false;
                 }
             });
 

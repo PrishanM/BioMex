@@ -66,7 +66,6 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
     private CameraStepTwoViewModel viewModel;
     private Context context;
 
-    private String customerDetailsGson;
     private boolean isValid = false;
     private int actionId = 1;
     private Uri resultURI;
@@ -96,7 +95,7 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
         progressDialog = ApplicationCommons.showProgressDialog(context,ApplicationConstants.TEXT_VALIDATING, ProgressDialog.STYLE_SPINNER);
 
-        customerDetailsGson = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
+        String customerDetailsGson = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
         if(customerDetailsGson != null){
             Gson gson = new Gson();
             customerDetails = gson.fromJson(customerDetailsGson, CustomerDetailsModel.class);

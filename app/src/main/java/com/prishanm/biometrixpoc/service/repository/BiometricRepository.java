@@ -24,7 +24,7 @@ import retrofit2.Response;
  */
 public class BiometricRepository {
 
-    private BiometricService biometricService;
+    private final BiometricService biometricService;
 
     @Inject
     public BiometricRepository(BiometricService biometricService) {

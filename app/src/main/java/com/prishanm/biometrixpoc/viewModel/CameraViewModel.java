@@ -18,7 +18,7 @@ import androidx.lifecycle.MutableLiveData;
  */
 public class CameraViewModel extends AndroidViewModel {
 
-    private BiometricRepository repository;
+    private final BiometricRepository repository;
     private final MutableLiveData<String> encodedImage;
 
     private LiveData<IdDetectionResponse> idDetectionResponseObservable;

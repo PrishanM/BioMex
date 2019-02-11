@@ -6,7 +6,7 @@ package com.prishanm.biometrixpoc.common;
 public class ApplicationConstants {
 
     public static final int requestPermissionID = 101;
-    public static int PESDK_RESULT = 1;
+    public static final int PESDK_RESULT = 1;
 
     //API Response Codes
     public static final String SUCCESS_RESPONSE_CODE = "00";

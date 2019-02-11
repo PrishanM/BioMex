@@ -31,7 +31,7 @@ import static com.prishanm.biometrixpoc.common.ApplicationConstants.FOLDER_NAME;
  */
 public class FileUtils {
 
-    public static File getTempCreatedFile(int fileType){
+    private static File getTempCreatedFile(int fileType){
 
         String imageFileName = "";
         String extension = "";
@@ -66,7 +66,7 @@ public class FileUtils {
     }
 
 
-    public static Uri getUriFromFile(Context context,File file){
+    private static Uri getUriFromFile(Context context, File file){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         {

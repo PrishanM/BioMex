@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -54,6 +55,9 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
     @BindView(R.id.btnCapture)
     ImageButton btnCapture;
 
+    @BindView(R.id.txtRandomAction)
+    TextView txtRandomAction;
+
     @BindView(R.id.btnCheck) ImageButton btnCheck;
 
     @BindView(R.id.imgCapture)
@@ -65,9 +69,8 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
     private MediaMetadataRetriever mediaMetadataRetriever;
 
     private Context context;
-    private Uri resultURI,mergedImageUri;
+    private Uri resultURI;
     private int actionId;
-    private String customerDetailsString;
     private File savedFile;
     private CustomerDetailsModel customerDetailsModel;
 
@@ -97,7 +100,7 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
 
         actionId = getIntent().getIntExtra(ApplicationConstants.TAG_INTENT_ACTION_ID,1);
 
-        customerDetailsString = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
+        String customerDetailsString = getIntent().getStringExtra(ApplicationConstants.TAG_INTENT_CUSTOMER_DATA);
         if(customerDetailsString != null){
             Gson gson = new Gson();
             customerDetailsModel = gson.fromJson(customerDetailsString, CustomerDetailsModel.class);
@@ -143,7 +146,9 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
 
         }
 
-        AlertDialog randomActionDialog = ApplicationCommons.showAlertDialog(context,
+        txtRandomAction.setText(message);
+
+        /*AlertDialog randomActionDialog = ApplicationCommons.showAlertDialog(context,
                 ApplicationConstants.TITLE_RANDOM_ACTION,
                 message,
                 "OK",
@@ -153,7 +158,7 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
 
         randomActionDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             randomActionDialog.dismiss();
-        });
+        });*/
     }
 
     @OnClick({R.id.btnCapture,R.id.btnCheck})

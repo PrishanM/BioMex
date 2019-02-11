@@ -64,7 +64,7 @@ public class CameraUtils {
 
     }
 
-    public static Bitmap rotateImage(Bitmap img, int degree){
+    private static Bitmap rotateImage(Bitmap img, int degree){
 
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
@@ -188,6 +188,6 @@ public class CameraUtils {
         }
 
 
-        return frontCameraId!=null ? true : false ;
+        return frontCameraId != null;
     }
 }

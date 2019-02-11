@@ -21,7 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @Module(subcomponents=ViewModelSubComponent.class)
 public class AppModule {
 
-    final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+    private final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

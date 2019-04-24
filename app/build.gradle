@@ -5,7 +5,7 @@ apply plugin: 'ly.img.android.pesdk'
 // Configure the PESDKPlugin
 pesdkConfig {
 
-    licencePath "LICENSE" // Name of the Licence file in the asset folder
+    licencePath "android_license" // Name of the Licence file in the asset folder
 
     // If you use another supportLibVersion ('com.android.support'), change this version here to update your own supportLibVersion
     supportLibVersion "27.1.1"
@@ -62,6 +62,8 @@ project.ext {
 
 android {
     compileSdkVersion 28
+    buildToolsVersion '28.0.3'
+
     defaultConfig {
         applicationId "com.prishanm.biometrixpoc"
         minSdkVersion 21

@@ -32,6 +32,11 @@ import com.prishanm.biometrixpoc.service.model.IdDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraViewModel;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
@@ -125,7 +130,28 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
                 progressDialog.show();
 
-                String encodedImage = CameraUtils.convertToBase64(resultURI.getPath());
+
+
+                try {
+                    Bitmap bitmap;
+                    bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
+                    String encodedImage = CameraUtils.convertToBase64Bitmap(bitmap);
+
+                    cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
+
+
+
+                    //Observe ViewModel changes
+                    observeViewModel(cameraViewModel);
+
+                    Log.d("XXXXXXXXXXXXXXXXXXXXXX",resultURI.toString());
+                } catch (IOException e) {
+                    Log.d("XXXXXXXXXXXXXXXXXXXXXX",resultURI.toString());
+                }
+
+
+
+
                 //Call ViewModel Repository Method to check the ID validity
 
                 /** testing code **/
@@ -147,12 +173,7 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
                 /** End of testing code **/
 
 
-                cameraViewModel.checkIdValidity(encodedImage); /* Commented in Dev Mode */
 
-
-
-                //Observe ViewModel changes
-                observeViewModel(cameraViewModel);
             } else {
                 Toast.makeText(_Context,ApplicationConstants.CAPTURE_IMAGE_VALIDATE_ERROR,Toast.LENGTH_SHORT).show();
             }
@@ -403,6 +424,8 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         intent.putExtra(MediaStore.EXTRA_OUTPUT, resultURI);
 
+        Log.d("PATH",resultURI.getPath());
+
         startActivityForResult(intent, CAPTURE_IMAGE);
 
 
@@ -411,24 +434,64 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
 
     private void openEditor(Uri inputImage) {
-        SettingsList settingsList = FileUtils.createPesdkSettingsList();
 
-        // Set input image
-        settingsList.getSettingsModel(EditorLoadSettings.class)
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
+                Locale.getDefault()).format(new Date());
+
+        try {
+            SettingsList settingsList = new SettingsList();
+            settingsList.getSettingsModel(EditorLoadSettings.class)
                 .setImageSource(inputImage);
 
         new PhotoEditorBuilder(this)
                 .setSettingsList(settingsList)
                 .startActivityForResult(this, PESDK_RESULT);
+        }catch (Exception e){
+            Log.d("xxxxxxx",e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+
+
+
+        //SettingsList settingsList = FileUtils.createPesdkSettingsList();
+
+        // Set input image
+        /*settingsList.getSettingsModel(EditorLoadSettings.class)
+                .setImageSource(inputImage);*/
+
+        /*new PhotoEditorBuilder(this)
+                .setSettingsList(settingsList)
+                .startActivityForResult(this, PESDK_RESULT);*/
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
-        if (requestCode == CAPTURE_IMAGE) {
-            if (resultCode == Activity.RESULT_OK) {
+        Log.d("PATH2",resultURI.getPath());
 
+        if (requestCode == CAPTURE_IMAGE) {
+            Log.d("PATH3",resultURI.getPath());
+            if (resultCode == Activity.RESULT_OK) {
+                Log.d("PATH4",resultURI.getPath());
                 openEditor(resultURI);
+
+                /*try {
+                    if(resultURI != null){
+                        Bitmap bitmap;
+                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(_Context,resultURI);
+                        imgImage.setImageBitmap(bitmap);
+                        activityCameraBinding.setIsImageCaptured(true);
+                    }
+                }catch (java.io.IOException e){
+                    e.printStackTrace();
+
+                    String oldURI = resultURI.getPath();
+
+                    Log.d("xxxxx",oldURI);
+
+                }*/
+
 
             }
         } else if(resultCode == RESULT_OK && requestCode == PESDK_RESULT){
@@ -449,6 +512,10 @@ public class CameraActivity extends AppCompatActivity implements Injectable {
 
         }
     }
+
+    /*public boolean checkRequestPermissions(){
+
+    }*/
 
 
 

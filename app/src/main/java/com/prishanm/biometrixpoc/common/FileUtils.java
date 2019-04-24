@@ -49,11 +49,16 @@ public class FileUtils {
         File file = null;
         try {
             file = File.createTempFile(imageFileName, extension, storageDir);
-        } catch (IOException e) {
+            //file = new File(storageDir.getPath()+File.separator+imageFileName+extension);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return file;
+
+        /*File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+
+        File file = new File(storageDir.getAbsolutePath()+"/"+imageFileName+extension);*/
 
     }
 

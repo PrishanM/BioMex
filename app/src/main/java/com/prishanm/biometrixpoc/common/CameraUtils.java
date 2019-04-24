@@ -64,6 +64,38 @@ public class CameraUtils {
 
     }
 
+    public static String convertToBase64Bitmap(Bitmap bitmap){
+        String base64Image = "";
+
+        //Bitmap bm = BitmapFactory.decodeFile(imagePath);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+
+        byte[] byteArrayImage = baos.toByteArray();
+
+        try{
+
+            base64Image = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+
+        } catch (OutOfMemoryError outOfMemoryError){
+
+            baos = new ByteArrayOutputStream();
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 30, baos);
+
+            byteArrayImage = baos.toByteArray();
+
+            base64Image = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+
+        }
+
+        return base64Image;
+
+
+    }
+
     private static Bitmap rotateImage(Bitmap img, int degree){
 
         Matrix matrix = new Matrix();
@@ -81,9 +113,15 @@ public class CameraUtils {
      * @return Bitmap after manipulation
      * @throws IOException
      */
-    private static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) throws IOException {
+    private static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage, InputStream imageStream) throws IOException {
 
-        ExifInterface ei = new ExifInterface(selectedImage.getPath());
+
+        ExifInterface ei = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            ei = new ExifInterface(imageStream);
+        } else {
+            ei = new ExifInterface(selectedImage.getPath());
+        }
         int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
         switch (orientation) {
@@ -162,7 +200,7 @@ public class CameraUtils {
         imageStream = context.getContentResolver().openInputStream(selectedImage);
         Bitmap img = BitmapFactory.decodeStream(imageStream, null, options);
 
-        img = rotateImageIfRequired(img, selectedImage);
+        img = rotateImageIfRequired(img, selectedImage,imageStream);
         return img;
 
     }

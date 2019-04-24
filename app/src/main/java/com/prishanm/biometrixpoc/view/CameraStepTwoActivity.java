@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -25,6 +26,8 @@ import com.prishanm.biometrixpoc.service.model.FaceDetectionRequest;
 import com.prishanm.biometrixpoc.service.model.FaceDetectionResponse;
 import com.prishanm.biometrixpoc.service.parcelable.CustomerDetailsModel;
 import com.prishanm.biometrixpoc.viewModel.CameraStepTwoViewModel;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -120,6 +123,23 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
                 FaceDetectionRequest faceDetectionRequest = new FaceDetectionRequest();
 
+                try {
+                    Bitmap bitmap;
+                    bitmap = CameraUtils.handleSamplingAndRotationBitmap(context,resultURI);
+                    String encodedImage = CameraUtils.convertToBase64Bitmap(bitmap);
+
+                    faceDetectionRequest.setImage(encodedImage);
+                    faceDetectionRequest.setSessionId(customerDetails.getSessionId());
+
+                    viewModel.checkMatchingFace(faceDetectionRequest);
+
+                    observeViewModel();
+
+                    Log.d("XXXXXXXXXXXXXXXXXXXXXX",resultURI.toString());
+                } catch (IOException e) {
+                    Log.d("XXXXXXXXXXXXXXXXXXXXXX",resultURI.toString());
+                }
+
                 /** testing code **/
 
                 /*Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.pic_selfie);
@@ -138,12 +158,6 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
 
                 /** End of testing code **/
 
-                faceDetectionRequest.setImage(CameraUtils.convertToBase64(resultURI.getPath()));
-                faceDetectionRequest.setSessionId(customerDetails.getSessionId());
-
-                viewModel.checkMatchingFace(faceDetectionRequest);
-
-                observeViewModel();
 
             } else{
                 Toast.makeText(context,ApplicationConstants.CAPTURE_SELFIE_VALIDATE_ERROR,Toast.LENGTH_SHORT).show();
@@ -285,6 +299,18 @@ public class CameraStepTwoActivity extends AppCompatActivity implements Injectab
             if (resultCode == Activity.RESULT_OK) {
 
                 openEditor(resultURI);
+
+                /*try {
+                    if(resultURI != null){
+                        Bitmap bitmap;
+                        //resultURI = resultUri;
+                        bitmap = CameraUtils.handleSamplingAndRotationBitmap(context,resultURI);
+                        imgImage.setImageBitmap(bitmap);
+                        cameraStepTwoBinding.setIsImageCaptured(true);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }*/
 
             }
         } else if(resultCode == RESULT_OK && requestCode == ApplicationConstants.PESDK_RESULT){

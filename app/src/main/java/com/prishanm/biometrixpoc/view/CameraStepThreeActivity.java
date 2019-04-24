@@ -238,7 +238,7 @@ public class CameraStepThreeActivity extends AppCompatActivity implements Inject
 
         if (requestCode == ApplicationConstants.CAPTURE_VIDEO && resultCode == Activity.RESULT_OK) {
 
-            mediaMetadataRetriever.setDataSource(resultURI.getPath());
+            mediaMetadataRetriever.setDataSource(context,resultURI);
 
             ArrayList<Bitmap> frameList = new ArrayList<>();
             int looper = 2000000;
